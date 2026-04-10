@@ -1,0 +1,41 @@
+import { Navigate, Route, Routes } from "react-router-dom";
+import DashboardLayout from "./components/DashboardLayout.tsx";
+import { SignUpPage } from "./pages/SignUp.tsx";
+import { LoginPage } from "./pages/Login.tsx";
+import { LoginHeader } from "./components/Layouts/LoginHeader.tsx";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { DashboardContentLayout } from "./components/Layouts/DashboardContentLayout.tsx";
+import { WorkspacePage } from "./pages/Workspace.tsx";
+import { BoardsPage } from "./pages/Board.tsx";
+import { BoardInfoPage } from "./pages/BoardInfo.tsx";
+import { SearchPage } from "./pages/Search.tsx";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { AuthorizeUser } from "./components/AuthorizeUser.tsx";
+
+const queryClient = new QueryClient();
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Routes>
+        <Route element={<LoginHeader />}>
+          <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/Login" element={<LoginPage />} />
+        </Route>
+        <Route element={<AuthorizeUser />}>
+          <Route path="/" element={<Navigate to="/dashboard" />} />
+          <Route path="/dashboard" element={<DashboardContentLayout />} />
+          <Route path="/workspaces" element={<WorkspacePage />} />
+          <Route
+            path="/workspaces/:workspaceId/boards"
+            element={<BoardsPage />}
+          />
+          <Route path="/boards/:boardId" element={<BoardInfoPage />} />
+          <Route path="search" element={<SearchPage />} />
+        </Route>
+      </Routes>
+      <ReactQueryDevtools />
+    </QueryClientProvider>
+  );
+}
+
+export default App;
