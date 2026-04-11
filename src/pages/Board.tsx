@@ -35,6 +35,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { InviteMemberDialog } from "@/components/InviteMemberDialog";
 
 interface ErrorResponse {
   message: string;
@@ -98,6 +99,7 @@ interface WorkspaceDto {
   boards: Board[];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface GetWorkspacesDto {
   workspaces: WorkspaceDto[];
   workspaceCount: number;
@@ -106,10 +108,11 @@ interface GetWorkspacesDto {
 
 export const BoardsPage = () => {
   const location = useLocation();
-  const { token, user } = useUser();
+  const { token } = useUser();
   const [errors, setErrors] = useState(null);
   const [active, setActive] = useState("all");
   const { workspaceId } = useParams();
+
   // create workspace
   const mutation = useMutation({
     mutationKey: ["create-board"],
@@ -149,6 +152,7 @@ export const BoardsPage = () => {
   });
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // eslint-disable-next-line no-debugger
     debugger;
     const formData = new FormData(e.target);
     const data = Object.fromEntries(
@@ -197,7 +201,7 @@ export const BoardsPage = () => {
             <Input
               type="text"
               placeholder="Search tasks..."
-              className="hidden md:block text-sm cursor-pointer bg-(--input)"
+              className="hidden md:block text-sm cursor-pointer bg-input"
             />
           </Link>
           <Button
@@ -337,6 +341,10 @@ export const BoardsPage = () => {
               </div>
             </DialogContent>
           </Dialog>
+          <InviteMemberDialog
+            workspaceName={location.state?.workspaceName}
+            workspaceId={workspaceId as string}
+          />
         </div>
       </header>
 

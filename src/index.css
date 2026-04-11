@@ -263,6 +263,13 @@ p {
     gap: 10px;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.filters-bar > div:first-child {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 input,
@@ -287,11 +294,8 @@ select {
 .column-wrapper {
     padding: 15px;
     width: 100%;
-    @media (width <= 1200px) {
-        width: 1200px;
-    }
     display: flex;
-    overflow: auto;
+    overflow-x: auto;
 }
 
 .column {
@@ -301,7 +305,7 @@ select {
     background-color: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    max-height: calc(100vh - 148px);
+    max-height: calc(100vh - 162px);
 
     display: flex;
     flex-direction: column;

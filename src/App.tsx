@@ -1,5 +1,4 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import DashboardLayout from "./components/DashboardLayout.tsx";
 import { SignUpPage } from "./pages/SignUp.tsx";
 import { LoginPage } from "./pages/Login.tsx";
 import { LoginHeader } from "./components/Layouts/LoginHeader.tsx";
@@ -11,6 +10,9 @@ import { BoardInfoPage } from "./pages/BoardInfo.tsx";
 import { SearchPage } from "./pages/Search.tsx";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { AuthorizeUser } from "./components/AuthorizeUser.tsx";
+import { ForgotPassword } from "./pages/ForgotPassword.tsx";
+import { ResetPassword } from "./pages/ResetPassword.tsx";
+import { AcceptInvitationPage } from "./pages/AcceptInvitateionPage.tsx";
 
 const queryClient = new QueryClient();
 function App() {
@@ -20,6 +22,8 @@ function App() {
         <Route element={<LoginHeader />}>
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/Login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
         </Route>
         <Route element={<AuthorizeUser />}>
           <Route path="/" element={<Navigate to="/dashboard" />} />
@@ -31,6 +35,7 @@ function App() {
           />
           <Route path="/boards/:boardId" element={<BoardInfoPage />} />
           <Route path="search" element={<SearchPage />} />
+          <Route path="/accept-invite" element={<AcceptInvitationPage />} />
         </Route>
       </Routes>
       <ReactQueryDevtools />

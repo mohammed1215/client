@@ -7,49 +7,51 @@ import {
   FieldSet,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Eye, EyeOff, LucideLoader2 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { LucideLoader2 } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AxiosError } from "axios";
 import { authApiEndPoints, axiosInstance } from "@/api/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useContext, useState } from "react";
-import { UserContext } from "@/context/userContext";
+import { useState } from "react";
+// import { UserContext } from "@/context/userContext";
 
-export const LoginPage = () => {
-  const [isPassword, setIsPassword] = useState(true);
+export const ResetPassword = () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [errors, setErrors] = useState<any>({});
-  const userContext = useContext(UserContext);
+  // const userContext = useContext(UserContext);
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  console.log(searchParams.get("token"));
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationKey: ["loginUser"],
+    mutationKey: ["reset-password"],
     mutationFn: async (formData: object) => {
-      console.log("user");
-      console.log(formData);
-      toast.loading("Login user please wait", {
+      toast.loading("sending email", {
         position: "top-center",
         id: "11",
         style: { color: "black", fontWeight: "bold", fontSize: "medium" },
       });
 
       const response = await axiosInstance.post(
-        authApiEndPoints.login,
+        authApiEndPoints.resetPassword + location.search,
         formData,
         { headers: { "Content-Type": "application/json" } },
       );
       return response.data;
     },
     onSuccess(data) {
-      console.log("Logged In successful:", data);
+      console.log("reset password email sent successfully:", data);
       queryClient.invalidateQueries({ queryKey: ["user"] });
-      toast.success("Logged successfully", {
+      toast.success("reset password email sent successfully", {
         position: "top-center",
         id: "11",
         style: { color: "green", fontWeight: "bold", fontSize: "medium" },
       });
-      userContext?.login(data.accessToken, data.user);
-      navigate("/dashboard");
+
+      navigate("/login");
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError(error: AxiosError<any>) {
       if (error.status === 400) {
         if (typeof error.response?.data.message === "string") {
@@ -74,18 +76,11 @@ export const LoginPage = () => {
   });
 
   function mapHelperError(errors: string[]) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let errorMap: any = {};
     for (const error of errors) {
-      if (error.startsWith("firstname") && !errorMap.firstname) {
-        errorMap = { ...errorMap, firstname: error };
-      } else if (error.startsWith("lastname") && !errorMap.lastname) {
-        errorMap = { ...errorMap, lastname: error };
-      } else if (error.startsWith("email") && !errorMap.email) {
-        errorMap = { ...errorMap, email: error };
-      } else if (error.startsWith("password") && !errorMap.password) {
+      if (error.startsWith("password") && !errorMap.password) {
         errorMap = { ...errorMap, password: error };
-      } else {
-        errorMap = { ...errorMap, global: error };
       }
     }
     return errorMap;
@@ -106,16 +101,15 @@ export const LoginPage = () => {
   return (
     <>
       <form
-        className="max-w-[500px] bg-(--auth-card) mx-auto px-4 rounded-lg p-10 mt-15 border-(--border) border"
+        className="max-w-125 bg-(--auth-card) mx-auto px-4 rounded-lg p-10 mt-15 border-border border"
         onSubmit={handleSubmit}
       >
         <div className="text-center mb-6 space-y-3">
           <h2 className="text-3xl dark:text-white font-bold mt-10">
-            Welcome Back
+            Enter New Password
           </h2>
           <p className="dark:text-(--text-4) text-[#6b7a90]">
-            {" "}
-            Log in to your TaskFlow account to continue collaborating.
+            Enter new password to reset the Password
           </p>
         </div>
 
@@ -123,40 +117,15 @@ export const LoginPage = () => {
         <FieldSet>
           <FieldGroup>
             <Field>
-              <FieldLabel htmlFor="email">Email Address</FieldLabel>
+              <FieldLabel htmlFor="password">New Password</FieldLabel>
               <Input
-                id="email"
+                id="password"
                 className="dark:bg-(--input-secondary) dark:placeholder:text-(--text-4)"
-                name="email"
+                name="password"
                 autoComplete="off"
-                placeholder="jane.doe@company.com"
+                type="password"
+                placeholder="************"
               />
-              <FieldError>{errors["email"]}</FieldError>
-            </Field>
-            <Field>
-              <div className="flex justify-between">
-                <FieldLabel htmlFor="password">Password</FieldLabel>
-                <Link className="text-(--link-primary)" to={"/forgot-password"}>
-                  Forgot Password?
-                </Link>
-              </div>
-              <div className="flex ">
-                <Input
-                  type={isPassword ? "password" : "text"}
-                  className="dark:bg-(--input-secondary) dark:placeholder:text-(--text-4)"
-                  id="password"
-                  name="password"
-                  placeholder="Enter Your Password"
-                  autoComplete="off"
-                />
-                <Button
-                  variant={"ghost"}
-                  type="button"
-                  onClick={() => setIsPassword(!isPassword)}
-                >
-                  {isPassword ? <Eye /> : <EyeOff />}
-                </Button>
-              </div>
               <FieldError>{errors["password"]}</FieldError>
             </Field>
           </FieldGroup>
@@ -165,19 +134,10 @@ export const LoginPage = () => {
             disabled={mutation.isPending}
             className="p-6 cursor-pointer font-bold text-white"
           >
-            Login{" "}
+            Send
             {mutation.isPending && <LucideLoader2 className="animate-spin" />}
           </Button>
         </FieldSet>
-        <p className="text-center mt-2">
-          {" "}
-          Don't have an account?
-          <Button variant={"link"}>
-            <Link className="text-(--link-primary)" to={"/signup"}>
-              Sign up
-            </Link>
-          </Button>
-        </p>
       </form>
     </>
   );

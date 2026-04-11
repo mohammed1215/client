@@ -38,6 +38,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ColumnCard } from "@/components/ColumnCard";
 import { TaskSlider } from "@/components/TaskSlider";
+import { InviteMemberBoardDialog } from "@/components/InviteMemberBoardDialog";
 
 export interface ErrorResponse {
   message: string;
@@ -319,7 +320,7 @@ export const BoardInfoPage = () => {
   }
 
   return (
-    <div className="flex-col flex w-full flex-1">
+    <div className="flex-col flex w-full flex-1 min-w-0 ">
       <header className="flex items-center justify-between h-16 px-4 bg-background border-b border-border">
         <div className="flex items-center gap-4">
           {/* This button automatically toggles the Sidebar! */}
@@ -549,6 +550,7 @@ export const BoardInfoPage = () => {
               </div>
             </DialogContent>
           </Dialog>
+          <InviteMemberBoardDialog workspaceId="" workspaceName="" />
         </div>
       </header>
 
