@@ -8,15 +8,14 @@ import { useUser } from "@/context/userContext";
 import { formatterDate, getUrl } from "@/helpers/helpers";
 import type { Column, CreateCommentDto, Task } from "@/pages/BoardInfo";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { format, formatDate } from "date-fns";
+import { format } from "date-fns";
 import { Loader2, X } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Button } from "./ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
@@ -172,7 +171,7 @@ export const TaskSlider = ({
   function handleMoveTask(e: React.SubmitEvent) {
     e.preventDefault();
     const formData = new FormData(e.target);
-    const data = Object.fromEntries(formData.entries()) as object;
+    const data = Object.fromEntries(formData.entries()) as any;
     data.position = parseInt(data.position);
     mutation3.mutate(data);
   }
@@ -375,7 +374,7 @@ export const TaskSlider = ({
                                   </div>
                                 </div>
                                 <Checkbox
-                                  onClick={(e) => {
+                                  onClick={(_e) => {
                                     const index = assigneeIds.indexOf(
                                       member.user.id,
                                     );
@@ -513,7 +512,7 @@ export const TaskSlider = ({
                   <div className="w-full flex-1 border rounded-md px-3 py-2 text-sm bg-transparent">
                     <MentionsInput
                       value={commentText || ""}
-                      onChange={(e, newValue) => setCommentText(newValue)}
+                      onChange={(_e, newValue) => setCommentText(newValue)}
                       placeholder="Write a comment… Use @name to mention"
                       className="w-full outline-none"
                       style={mentionsStyle} /* 👈 Pass the object here */
@@ -522,7 +521,7 @@ export const TaskSlider = ({
                         trigger="@"
                         data={mentionData}
                         markup="@[__display__](__id__)"
-                        displayTransform={(id, display) => `@${display}`}
+                        displayTransform={(_id, display) => `@${display}`}
                         // Optional: You can style the highlighted text inside the input
                         style={{
                           backgroundColor: "var(--amber-soft)",

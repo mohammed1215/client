@@ -2,7 +2,7 @@ import { Link } from "react-router-dom"
 import { Button } from "./ui/button"
 import { ArrowRight } from "lucide-react"
 
-export const OuterSectionDashboardLayout = ({children,text,viewAll,linkTo})=>{
+export const OuterSectionDashboardLayout = ({children,text,viewAll,linkTo}:{children:any,text:string,viewAll:boolean,linkTo:string})=>{
     return <>
     <div className="flex justify-between items-center my-5">
         <h2 className="text-2xl font-bold">{text}</h2>

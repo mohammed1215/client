@@ -1,5 +1,15 @@
 import { formatDistanceToNow } from "date-fns";
-export const BoardCard = ({ title, description, updatedAt, visibility }) => {
+export const BoardCard = ({
+  title,
+  description,
+  updatedAt,
+  visibility,
+}: {
+  title: string;
+  description: string;
+  updatedAt: string|undefined;
+  visibility: string;
+}) => {
   return (
     <div className="board-card">
       <div className="card-header">
@@ -10,7 +20,7 @@ export const BoardCard = ({ title, description, updatedAt, visibility }) => {
             <span className="card-visibility">{visibility}</span>
             <span>
               Updated{" "}
-              {formatDistanceToNow(new Date(updatedAt), { addSuffix: true })}
+              {formatDistanceToNow(new Date(updatedAt as string), { addSuffix: true })}
             </span>
           </div>
         </div>

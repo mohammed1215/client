@@ -43,7 +43,7 @@ export const SearchPage = ()=>{
         mutationKey: ['search'],
         mutationFn: async (formData:SearchQueryDto)=>{
             return (await axiosInstance.get<SearchResponse>(searchEndpoints.search,{params: formData})).data
-        },onSuccess(data, variables, onMutateResult, context) {
+        },onSuccess(data) {
             console.log(data)
         },
     })

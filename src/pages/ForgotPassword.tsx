@@ -7,18 +7,17 @@ import {
   FieldSet,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Eye, EyeOff, LucideLoader2 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { LucideLoader2 } from "lucide-react";
 import { AxiosError } from "axios";
 import { authApiEndPoints, axiosInstance } from "@/api/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useContext, useDebugValue, useState } from "react";
-import { UserContext } from "@/context/userContext";
+import { useState } from "react";
+// import { UserContext } from "@/context/userContext";
 
 export const ForgotPassword = () => {
   const [errors, setErrors] = useState<any>({});
-  const userContext = useContext(UserContext);
+  // const userContext = useContext(UserContext);
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationKey: ["forgot-password"],
@@ -80,8 +79,6 @@ export const ForgotPassword = () => {
     }
     return errorMap;
   }
-
-  const navigate = useNavigate();
 
   async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();

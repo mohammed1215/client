@@ -53,26 +53,26 @@ export interface Visibility {
   WORKSPACE: "WORKSPACE";
 }
 
-interface User {
-  id: string;
-  email: string;
-  firstname: string;
-  lastname: string;
-  avatarUrl: string | null;
-  bio: string | null;
-  emailVerified: boolean | null;
-  emailPreference: string;
-  isActive: false;
-  createdAt: string;
-  updatedAt?: string;
-  lastLoginAt: string | null;
-}
-interface WorkspaceMember {
-  id: string;
-  role: string;
-  joinedAt: string;
-  user: User;
-}
+// interface User {
+//   id: string;
+//   email: string;
+//   firstname: string;
+//   lastname: string;
+//   avatarUrl: string | null;
+//   bio: string | null;
+//   emailVerified: boolean | null;
+//   emailPreference: string;
+//   isActive: false;
+//   createdAt: string;
+//   updatedAt?: string;
+//   lastLoginAt: string | null;
+// }
+// interface WorkspaceMember {
+//   id: string;
+//   role: string;
+//   joinedAt: string;
+//   user: User;
+// }
 interface Board {
   id: string;
   name: string;
@@ -85,26 +85,26 @@ interface Board {
   visibility: string;
   deletedAt: string | null;
 }
-interface WorkspaceDto {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  isPrivate: false;
-  createdAt: string;
-  updatedAt: string;
-  owner: User;
-  members: WorkspaceMember[];
+// interface WorkspaceDto {
+//   id: string;
+//   name: string;
+//   slug: string;
+//   description: string;
+//   isPrivate: false;
+//   createdAt: string;
+//   updatedAt: string;
+//   owner: User;
+//   members: WorkspaceMember[];
 
-  boards: Board[];
-}
+//   boards: Board[];
+// }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-interface GetWorkspacesDto {
-  workspaces: WorkspaceDto[];
-  workspaceCount: number;
-  pageCount: number;
-}
+// interface GetWorkspacesDto {
+//   workspaces: WorkspaceDto[];
+//   workspaceCount: number;
+//   pageCount: number;
+// }
 
 export const BoardsPage = () => {
   const location = useLocation();

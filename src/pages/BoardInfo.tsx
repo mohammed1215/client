@@ -194,7 +194,7 @@ export const BoardInfoPage = () => {
   useDebugValue("draggedItem");
   const [activePanel, setActivePanel] = useState(false);
   const queryClient = useQueryClient();
-  const [createdData, setCreatedData] = useState<CreateBoardDto | null>(null);
+  const [_createdData, setCreatedData] = useState<CreateBoardDto | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   // create task
   const mutation = useMutation({

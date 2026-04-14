@@ -23,7 +23,8 @@ import { useState } from "react";
 import { FieldError } from "./ui/field";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
-type BoardRole = "member" | "admin" | "viewer";
+// type BoardRole = "member" | "admin" | "viewer";
+type WorkspaceRole = "member" | "admin" | "viewer"
 export const InviteMemberBoardDialog = ({
   workspaceId,
   workspaceName,

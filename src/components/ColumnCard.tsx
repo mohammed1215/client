@@ -1,7 +1,8 @@
 import { format } from "date-fns"
 import { Dialog, DialogTrigger } from "./ui/dialog"
+import type { Task } from "../pages/BoardInfo"
 
-export const ColumnCard = ({title,tasks,setSelectedTask,activePanel,setActivePanel})=>{
+export const ColumnCard = ({title,tasks,setSelectedTask,setActivePanel}:{title:string,tasks:Array<Task>,setSelectedTask:Function,activePanel?:boolean,setActivePanel:Function})=>{
     return <div className="column">
         {/* column header */}
         <div className="col-header">
@@ -21,7 +22,7 @@ export const ColumnCard = ({title,tasks,setSelectedTask,activePanel,setActivePan
                         <div className="priority">
                             {task.priority}
                         </div>
-                        <div className="due-date">{format(task.dueDate,'MMM d')}</div>
+                        <div className="due-date">{format(task.dueDate as string,'MMM d')}</div>
                         <div className="avatars"></div>
                     </div>
                 </div>)
