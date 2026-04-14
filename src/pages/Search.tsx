@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { useMutation } from "@tanstack/react-query"
 import { Loader2, Search } from "lucide-react"
-import type { Board, Column, SearchQueryDto, SearchTypes, Task } from "./BoardInfo"
+import type {  Column, SearchQueryDto, SearchTypes } from "./BoardInfo"
 import {useDebounce} from 'use-debounce'
 import { useEffect, useState } from "react"
 import { TaskPriority } from "@/components/TaskPriority"
@@ -35,8 +35,8 @@ export interface SearchResponse {
 export const SearchPage = ()=>{
     const [text,setText] = useState('')
     const [type,setType] = useState<SearchTypes>('ALL')
-    const [workspaceId] = useState()
-    const [page,setPage] = useState(1)
+    // const [workspaceId] = useState()
+    // const [page,setPage] = useState(1)
     const [debouncedValue] = useDebounce(text,500)
 
     const searchMutation = useMutation({
@@ -76,7 +76,7 @@ export const SearchPage = ()=>{
                                 <Search/>
                                 <Input onChange={(e)=>setText(e.target.value)} value={text} type="search" placeholder="Search tasks, boards, descriptions…" className="text-[14px]! flex-1 dark:bg-(--surface)! border-none!" name=""/>
                             </div>
-                            <Select name="" onValueChange={(type)=>setType(type)} value={type}>
+                            <Select name="" onValueChange={(type)=>setType(type as SearchTypes)} value={type}>
                                 <SelectTrigger className="h-full self-stretch">
                                     <SelectValue placeholder="Select Type of Search"/>
                                 </SelectTrigger>

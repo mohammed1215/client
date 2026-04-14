@@ -64,7 +64,7 @@ interface User {
   emailPreference: string;
   isActive: false;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
   lastLoginAt: string | null;
 }
 interface WorkspaceMember {
@@ -80,7 +80,7 @@ interface Board {
   backgroundColor: string;
   isArchived: boolean;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
   archivedAt: string;
   visibility: string;
   deletedAt: string | null;
