@@ -32,6 +32,7 @@ import {
 } from "./ui/select";
 import { Label } from "./ui/label";
 import { MentionsInput, Mention } from "react-mentions";
+import { ActivityTab } from "./ActivityTab";
 const mentionsStyle = {
   control: {
     fontSize: 14,
@@ -64,11 +65,17 @@ const mentionsStyle = {
     },
   },
 };
+
 export const TaskSlider = ({
   taskId,
   setActivePanel,
   activePanel,
   columns,
+}: {
+  taskId: string | null;
+  setActivePanel: any;
+  activePanel: boolean;
+  columns?: Column[] | null;
 }) => {
   const [assigneeIds, setAssigneeIds] = useState<any>([]);
   const [commentText, setCommentText] = useState("");
@@ -136,7 +143,7 @@ export const TaskSlider = ({
       );
       return response.data;
     },
-    onSuccess(data, variables, onMutateResult, context) {
+    onSuccess() {
       queryClient.invalidateQueries({ queryKey: ["task-details", taskId] });
     },
   });
@@ -151,14 +158,13 @@ export const TaskSlider = ({
   const mutation3 = useMutation({
     mutationKey: ["move-task"],
     mutationFn: async (formData: object) => {
-      debugger;
       const response = await axiosInstance.patch(
         getUrl(taskEndpoints.moveTask, { taskId }),
         formData,
       );
       return response.data;
     },
-    onSuccess(data, variables, onMutateResult, context) {
+    onSuccess() {
       queryClient.invalidateQueries({ queryKey: ["get-board-columns"] });
     },
   });
@@ -166,7 +172,6 @@ export const TaskSlider = ({
   function handleMoveTask(e: React.SubmitEvent) {
     e.preventDefault();
     const formData = new FormData(e.target);
-    debugger;
     const data = Object.fromEntries(formData.entries()) as object;
     data.position = parseInt(data.position);
     mutation3.mutate(data);
@@ -341,15 +346,15 @@ export const TaskSlider = ({
                         {/* people inside the board */}
                         <div className="assign-list">
                           {query.data?.board?.members.map((member) => {
-                            let checked = false;
-                            if (assigneeIds) {
-                              for (const assigneeId of assigneeIds) {
-                                if (assigneeId === member.user.id) {
-                                  checked = true;
-                                  break;
-                                }
-                              }
-                            }
+                            // let checked = false;
+                            // if (assigneeIds) {
+                            //   for (const assigneeId of assigneeIds) {
+                            //     if (assigneeId === member.user.id) {
+                            //       checked = true;
+                            //       break;
+                            //     }
+                            //   }
+                            // }
                             return (
                               <div key={member.id} className="assign-item">
                                 <div className="flex items-center gap-4">
@@ -443,7 +448,7 @@ export const TaskSlider = ({
                           />
                         </SelectTrigger>
                         <SelectContent>
-                          {columns.map((column: Column) => {
+                          {columns?.map((column: Column) => {
                             return (
                               <SelectItem key={column.id} value={column.id}>
                                 {column.name}
@@ -536,7 +541,7 @@ export const TaskSlider = ({
                 </form>
               </TabsContent>
               <TabsContent value="attachments">
-                {query.data?.attachments.map((attachment) => {
+                {query.data?.attachments?.map((attachment) => {
                   return (
                     <div key={attachment.id} className="attachment-item">
                       <span>
@@ -600,8 +605,11 @@ export const TaskSlider = ({
                   </Button>
                 </form>
               </TabsContent>
-              <TabsContent value="activity">
-                Change your password here.
+              <TabsContent value="activity" className="mt-4">
+                <ActivityTab
+                  activities={query.data?.activities}
+                  boardMembers={query.data?.board?.members}
+                />
               </TabsContent>
             </Tabs>
           </div>

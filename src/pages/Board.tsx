@@ -405,6 +405,7 @@ export const BoardsPage = () => {
                 title={board.name}
                 updatedAt={board.updatedAt}
                 description={board.description}
+                visibility={board.visibility}
               />
             </Link>
           );

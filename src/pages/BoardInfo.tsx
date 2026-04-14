@@ -136,6 +136,7 @@ export interface Task {
   watchers?: Watcher[];
   attachments?: Attachment[];
   comment?: Comment[];
+  activities: any[];
 }
 
 export interface Attachment {
