@@ -13,34 +13,48 @@ import { AuthorizeUser } from "./components/AuthorizeUser.tsx";
 import { ForgotPassword } from "./pages/ForgotPassword.tsx";
 import { ResetPassword } from "./pages/ResetPassword.tsx";
 import { AcceptInvitationPage } from "./pages/AcceptInvitateionPage.tsx";
+import { VerifyEmail } from "./pages/VerifyEmail.tsx";
 
 const queryClient = new QueryClient();
 function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <Routes>
-        <Route element={<LoginHeader />}>
-          <Route path="/signup" element={<SignUpPage />} />
-          <Route path="/Login" element={<LoginPage />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-        </Route>
-        <Route element={<AuthorizeUser />}>
-          <Route path="/" element={<Navigate to="/dashboard" />} />
-          <Route path="/dashboard" element={<DashboardContentLayout />} />
-          <Route path="/workspaces" element={<WorkspacePage />} />
-          <Route
-            path="/workspaces/:workspaceId/boards"
-            element={<BoardsPage />}
-          />
-          <Route path="/boards/:boardId" element={<BoardInfoPage />} />
-          <Route path="search" element={<SearchPage />} />
-          <Route path="/accept-invite" element={<AcceptInvitationPage />} />
-        </Route>
-      </Routes>
-      <ReactQueryDevtools />
-    </QueryClientProvider>
-  );
+    return (
+        <QueryClientProvider client={queryClient}>
+            <Routes>
+                <Route element={<LoginHeader />}>
+                    <Route path="/signup" element={<SignUpPage />} />
+                    <Route path="/Login" element={<LoginPage />} />
+                    <Route
+                        path="/forgot-password"
+                        element={<ForgotPassword />}
+                    />
+                    <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route path="/verify-email" element={<VerifyEmail />} />
+                </Route>
+                <Route element={<AuthorizeUser />}>
+                    <Route path="/" element={<Navigate to="/dashboard" />} />
+                    <Route
+                        path="/dashboard"
+                        element={<DashboardContentLayout />}
+                    />
+                    <Route path="/workspaces" element={<WorkspacePage />} />
+                    <Route
+                        path="/workspaces/:workspaceId/boards"
+                        element={<BoardsPage />}
+                    />
+                    <Route
+                        path="/boards/:boardId"
+                        element={<BoardInfoPage />}
+                    />
+                    <Route path="search" element={<SearchPage />} />
+                    <Route
+                        path="/accept-invite"
+                        element={<AcceptInvitationPage />}
+                    />
+                </Route>
+            </Routes>
+            <ReactQueryDevtools />
+        </QueryClientProvider>
+    );
 }
 
 export default App;

@@ -61,3 +61,16 @@ export const commentsEndpoints = {
 export const searchEndpoints = {
   search: "/api/v1/search",
 };
+
+export default {
+  axiosInstance,
+  userApiEndPoints,
+  authApiEndPoints,
+  workspaceEndPoints,
+  boardEndPoints,
+  columnEndPoints,
+  taskEndpoints,
+  attahcmentEndPoints,
+  commentsEndpoints,
+  searchEndpoints,
+};
