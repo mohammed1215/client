@@ -14,9 +14,15 @@ import { ForgotPassword } from "./pages/ForgotPassword.tsx";
 import { ResetPassword } from "./pages/ResetPassword.tsx";
 import { AcceptInvitationPage } from "./pages/AcceptInvitateionPage.tsx";
 import { VerifyEmail } from "./pages/VerifyEmail.tsx";
+import { useState } from "react";
+import { SocketLayer } from "./socket/socket.tsx";
 
 const queryClient = new QueryClient();
 function App() {
+    const [notificationCount, setNotificationCount] = useState<number | null>(
+        null,
+    );
+    const [prevWorkspace, setPrevWorkspace] = useState<string | null>(null);
     return (
         <QueryClientProvider client={queryClient}>
             <Routes>
@@ -31,25 +37,52 @@ function App() {
                     <Route path="/verify-email" element={<VerifyEmail />} />
                 </Route>
                 <Route element={<AuthorizeUser />}>
-                    <Route path="/" element={<Navigate to="/dashboard" />} />
-                    <Route
-                        path="/dashboard"
-                        element={<DashboardContentLayout />}
-                    />
-                    <Route path="/workspaces" element={<WorkspacePage />} />
-                    <Route
-                        path="/workspaces/:workspaceId/boards"
-                        element={<BoardsPage />}
-                    />
-                    <Route
-                        path="/boards/:boardId"
-                        element={<BoardInfoPage />}
-                    />
-                    <Route path="search" element={<SearchPage />} />
-                    <Route
-                        path="/accept-invite"
-                        element={<AcceptInvitationPage />}
-                    />
+                    <Route element={<SocketLayer />}>
+                        <Route
+                            path="/"
+                            element={<Navigate to="/dashboard" />}
+                        />
+                        <Route
+                            path="/dashboard"
+                            element={
+                                <DashboardContentLayout
+                                    notificationCount={notificationCount}
+                                />
+                            }
+                        />
+                        <Route
+                            path="/workspaces"
+                            element={
+                                <WorkspacePage
+                                    notificationCount={notificationCount}
+                                    // workspaceId={prevWorkspace}
+                                />
+                            }
+                        />
+
+                        <Route
+                            path="/workspaces/:workspaceId/boards"
+                            element={
+                                <BoardsPage
+                                    notificationCount={notificationCount}
+                                    // setPrevWorkspace={setPrevWorkspace}
+                                />
+                            }
+                        />
+                        <Route
+                            path="/boards/:boardId"
+                            element={
+                                <BoardInfoPage
+                                    notificationCount={notificationCount}
+                                />
+                            }
+                        />
+                        <Route path="search" element={<SearchPage />} />
+                        <Route
+                            path="/accept-invite"
+                            element={<AcceptInvitationPage />}
+                        />
+                    </Route>
                 </Route>
             </Routes>
             <ReactQueryDevtools />
