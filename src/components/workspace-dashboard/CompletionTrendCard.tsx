@@ -21,7 +21,7 @@ export const CompletionTrendCard = ({
             className="completion-trend"
         >
             {data.length ? (
-                <div style={{ width: "100%", height: 300 }}>
+                <div style={{ width: "100%", height: 300, fontSize: "15px" }}>
                     <AreaChart
                         height={300}
                         responsive

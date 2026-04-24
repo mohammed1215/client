@@ -18,7 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Bell, Loader2, PlusCircle } from "lucide-react";
+import { Bell, Loader, Loader2, PlusCircle } from "lucide-react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
@@ -284,13 +284,6 @@ export const BoardsPage = ({
             return response.data;
         },
     });
-    if (query.isPending) {
-        return (
-            <div className="justify-center flex w-full items-center h-100vh">
-                <Loader2 className="animate-spin" /> Loading
-            </div>
-        );
-    }
 
     return (
         <div className="flex-col flex w-full">
@@ -493,6 +486,12 @@ export const BoardsPage = ({
                 </div>
             </header>
             {/* Workspace Dashboard */}
+            {query2.isLoading && (
+                <div className="w-full h-50 flex justify-center items-center">
+                    getting workspace data...
+                    <Loader className="animate-spin " />
+                </div>
+            )}
             {query2.isSuccess && (
                 <WorkspaceDashboard
                     totalTasks={query2.data?.totalTasks ?? 0}
@@ -547,34 +546,43 @@ export const BoardsPage = ({
                 </div>
             </div>
             <hr />
+            {query.isPending && (
+                <div className="justify-center flex w-full items-center h-50">
+                    <Loader2 className="animate-spin" /> Loading
+                </div>
+            )}
             {/* Board list */}
-            <div className="workspace-cards">
-                {query.data?.map((board) => {
-                    // let role = 'member'
-                    // if(workspace.owner.id === user.id){
-                    //     role = 'owner'
-                    // }else{
-                    //     workspace.members.forEach(member=>{
-                    //         if(member.user.id === user.id){
-                    //             role = member.role
-                    //         }
-                    //     })
-                    // }
-                    return (
-                        <Link
-                            to={`/boards/${board.id}`}
-                            state={{ boardBackground: board.backgroundColor }}
-                        >
-                            <BoardCard
-                                title={board.name}
-                                updatedAt={board.updatedAt}
-                                description={board.description}
-                                visibility={board.visibility}
-                            />
-                        </Link>
-                    );
-                })}
-            </div>
+            {query.isSuccess && (
+                <div className="workspace-cards">
+                    {query.data?.map((board) => {
+                        // let role = 'member'
+                        // if(workspace.owner.id === user.id){
+                        //     role = 'owner'
+                        // }else{
+                        //     workspace.members.forEach(member=>{
+                        //         if(member.user.id === user.id){
+                        //             role = member.role
+                        //         }
+                        //     })
+                        // }
+                        return (
+                            <Link
+                                to={`/boards/${board.id}`}
+                                state={{
+                                    boardBackground: board.backgroundColor,
+                                }}
+                            >
+                                <BoardCard
+                                    title={board.name}
+                                    updatedAt={board.updatedAt}
+                                    description={board.description}
+                                    visibility={board.visibility}
+                                />
+                            </Link>
+                        );
+                    })}
+                </div>
+            )}
         </div>
     );
 };
