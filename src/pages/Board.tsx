@@ -191,6 +191,7 @@ export const BoardsPage = ({
 }) => {
     const location = useLocation();
     const { token } = useUser();
+    console.log(token);
     const [errors, setErrors] = useState(null);
     const [active, setActive] = useState("all");
     const { workspaceId } = useParams();
@@ -269,10 +270,16 @@ export const BoardsPage = ({
     const query2 = useQuery({
         queryKey: [`get-dashboard-${workspaceId}`],
         queryFn: async () => {
+            console.log("axios instance", axiosInstance.defaults);
             const response = await axiosInstance.get<dashboardResponse>(
                 getUrl(workspaceEndPoints.getWorkspaceDashboard, {
                     workspaceId,
                 }),
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                },
             );
             return response.data;
         },
