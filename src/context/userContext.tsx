@@ -1,7 +1,25 @@
 import { axiosInstance } from "@/api/api";
 import { createContext, useContext, useState } from "react";
+
+type UserToken = {
+    id: string;
+    email: string;
+    firstname: string;
+    lastname: string;
+    avatarUrl: string | null;
+    bio: string | null;
+    emailVerified: boolean;
+    emailPreference: string | null;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+    lastLoginAt: string | null;
+    failedLoginAttempts: number | null;
+    lockUntil: string | null;
+};
+
 interface UserContextType {
-    user: any | null; // You can replace 'any' with your User interface later
+    user: UserToken | null; // You can replace 'any' with your User interface later
     token: string | null;
     login: (token: string, user: any) => void;
     logout: () => void;

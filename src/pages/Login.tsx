@@ -56,7 +56,7 @@ export const LoginPage = () => {
                 },
             });
             userContext?.login(data.accessToken, data.user);
-            navigate("/dashboard");
+            navigate("/");
         },
         onError(error: AxiosError<any>) {
             if (error.status === 400) {

@@ -2,12 +2,13 @@ import { axiosInstance, userApiEndPoints } from "@/api/api";
 import { useUser } from "@/context/userContext";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useNavigate } from "react-router-dom";
 import DashboardLayout from "./DashboardLayout";
+import { useEffect } from "react";
 
 export const AuthorizeUser = () => {
     const { token } = useUser();
-
+    const navigate = useNavigate();
     const { isPending, isError, isSuccess } = useQuery({
         queryKey: ["authUser", token],
         queryFn: () => {
@@ -21,6 +22,21 @@ export const AuthorizeUser = () => {
         retry: false,
     });
 
+    useEffect(() => {
+        function handleAuthUnautorized() {
+            navigate("/login");
+        }
+
+        window.addEventListener("auth-unauthorized", () => {
+            handleAuthUnautorized();
+        });
+        return () =>
+            window.removeEventListener(
+                "auth-unauthorized",
+                handleAuthUnautorized,
+            );
+    }, [navigate]);
+
     if (!token || isError) {
         return <Navigate to="/login" replace />;
     }
@@ -32,7 +48,7 @@ export const AuthorizeUser = () => {
     if (isSuccess) {
         return (
             <DashboardLayout>
-                <Outlet />;
+                <Outlet />
             </DashboardLayout>
         );
     }

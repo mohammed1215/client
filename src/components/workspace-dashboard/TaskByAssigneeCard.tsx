@@ -6,22 +6,26 @@ export const TaskByAssigneeCard = ({
     tasksByAssignee,
     totalTasks,
 }: {
-    tasksByAssignee: dashboardResponse["tasksByAssignee"];
+    tasksByAssignee?: dashboardResponse["tasksByAssignee"];
     totalTasks: number;
 }) => {
     return (
         <GlobalCard className="tasks-by-assignee" title="Tasks by assignee">
-            {tasksByAssignee.map((task) => {
-                return (
-                    <AssigneeListItem
-                        firstname={task.firstname}
-                        lastname={task.lastname}
-                        taskCount={task.count}
-                        avatarUrl={task.avatarUrl}
-                        percentageOfAllTasks={`${(task.count / totalTasks) * 100}%`}
-                    />
-                );
-            })}
+            {!tasksByAssignee ||
+                (tasksByAssignee.length === 0 && <div>No Assignees Found</div>)}
+            {tasksByAssignee &&
+                tasksByAssignee.map((task) => {
+                    return (
+                        <AssigneeListItem
+                            key={task.firstname + task.lastname}
+                            firstname={task.firstname}
+                            lastname={task.lastname}
+                            taskCount={task.count}
+                            avatarUrl={task.avatarUrl}
+                            percentageOfAllTasks={`${(task.count / totalTasks) * 100}%`}
+                        />
+                    );
+                })}
         </GlobalCard>
     );
 };

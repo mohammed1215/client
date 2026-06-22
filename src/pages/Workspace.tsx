@@ -207,19 +207,7 @@ export const WorkspacePage = ({
                             className="hidden md:block text-sm cursor-pointer bg-(--input)"
                         />
                     </Link>
-                    <Button
-                        variant={"default"}
-                        className="relative cursor-pointer dark:text-white dark:hover:text-white hover:text-gray-700"
-                    >
-                        <Bell className="" />
-                        {/* Unread Badge */}
-                        <Badge
-                            className="absolute top-0 right-0 w-5 h-5block"
-                            variant={"destructive"}
-                        >
-                            {notificationCount}
-                        </Badge>
-                    </Button>
+
                     <Dialog>
                         <DialogTrigger asChild>
                             <Button
@@ -379,6 +367,7 @@ export const WorkspacePage = ({
 
                     return (
                         <Link
+                            key={workspace.id}
                             to={`/workspaces/${workspace.id}/boards`}
                             state={{ workspaceName: workspace.name }}
                         >

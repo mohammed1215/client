@@ -36,25 +36,6 @@ export const DashboardContentLayout = ({
                             className="hidden md:block text-sm"
                         />
                     </Link>
-                    <Button
-                        variant={"default"}
-                        className="relative cursor-pointer dark:text-white dark:hover:text-white hover:text-gray-700"
-                    >
-                        <Bell className="" />
-                        {/* Unread Badge */}
-                        <Badge
-                            className="absolute top-0 right-0 w-5 h-5 block"
-                            variant={"destructive"}
-                        >
-                            {notificationCount}
-                        </Badge>
-                    </Button>
-                    <Button
-                        variant={"defaultYellow"}
-                        className="cursor-pointer font-bold"
-                    >
-                        <PlusCircle /> Create Tasks
-                    </Button>
                 </div>
             </header>
 

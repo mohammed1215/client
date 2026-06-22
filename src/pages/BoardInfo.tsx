@@ -1,4 +1,4 @@
-import { axiosInstance, columnEndPoints, taskEndpoints } from "@/api/api";
+import api, { axiosInstance, columnEndPoints, taskEndpoints } from "@/api/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,6 +44,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ColumnCard } from "@/components/ColumnCard";
 import { TaskSlider } from "@/components/TaskSlider";
 import { InviteMemberBoardDialog } from "@/components/InviteMemberBoardDialog";
+import { DialogButton } from "../components/DialogButton";
 
 export interface ErrorResponse {
     message: string;
@@ -201,8 +202,8 @@ export const BoardInfoPage = ({
     const { boardId } = useParams();
     const [draggedItem, setDraggedItem] = useState<number | null>(null);
     const location = useLocation();
-
-    useDebugValue("draggedItem");
+    const [addColumnFormOpen, setAddColumnFormOpen] = useState(false);
+    const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
     const [activePanel, setActivePanel] = useState(false);
     const queryClient = useQueryClient();
     const [_createdData, setCreatedData] = useState<CreateBoardDto | null>(
@@ -265,6 +266,69 @@ export const BoardInfoPage = ({
             return response.data;
         },
     });
+
+    const mutationAddCol = useMutation({
+        mutationFn: async (data: { name: string }) => {
+            toast.loading("adding column...", {
+                id: 4,
+                position: "top-center",
+            });
+            const response = await axiosInstance.post(
+                getUrl(api.columnEndPoints.getOrCreateColumn, { boardId }),
+                data,
+            );
+
+            return response.data;
+        },
+        onSuccess() {
+            toast.success("column has been added successfully", {
+                id: 4,
+                position: "top-center",
+            });
+
+            queryClient.refetchQueries({ queryKey: ["get-board-columns"] });
+        },
+        onError() {
+            toast.error("Something went wrong", {
+                id: 4,
+                position: "top-center",
+            });
+        },
+    });
+
+    const mutationDelCol = useMutation({
+        mutationFn: async (columnId: string) => {
+            toast.loading("deleting column", { id: 4, position: "top-center" });
+
+            const response = await axiosInstance.delete(
+                getUrl(api.columnEndPoints.deleteColumn, { boardId, columnId }),
+            );
+        },
+        onSuccess() {
+            toast.success("column  has been deleted successfully", {
+                id: 4,
+                position: "top-center",
+            });
+
+            queryClient.refetchQueries({ queryKey: ["get-board-columns"] });
+        },
+        onError() {
+            toast.error("something went wrong");
+        },
+    });
+
+    //add new column
+    const handleAddColumn = (e: React.SubmitEvent) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries()) as { name: string };
+        mutationAddCol.mutate(data);
+    };
+
+    // delete column
+    const handleDeleteColumn = (columnId: string) => {
+        mutationDelCol.mutate(columnId);
+    };
 
     const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -335,13 +399,24 @@ export const BoardInfoPage = ({
 
     return (
         <div
-            className={`flex-col flex w-full flex-1 min-w-0 `}
-            style={{ backgroundColor: location.state?.boardBackground }}
+            className="relative flex flex-col w-full min-w-0 min-h-screen flex-1 overflow-hidden"
+            style={{
+                backgroundColor: location.state?.boardBackground || "#7a0010",
+            }}
         >
-            <header
-                className="flex items-center justify-between h-16 px-4  border-b border-border"
+            {/* 🌟 THE SHADING LAYER: This sits on top of the red and forces the vignette/gradient shape */}
+            <div
+                className="absolute inset-0 pointer-events-none z-0"
                 style={{
-                    backgroundColor: `${location.state?.backgroundColor || "var(--background)"} !important`,
+                    backgroundImage:
+                        "linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(0, 0, 0, 0.45) 100%)",
+                    boxShadow: "inset 0 0 120px rgba(0, 0, 0, 0.6)",
+                }}
+            />
+            <header
+                className="flex relative z-10 items-center justify-between h-16 px-4  border-b border-border"
+                style={{
+                    background: `${location.state?.backgroundColor || "var(--background)"} !important`,
                 }}
             >
                 <div className="flex items-center gap-4">
@@ -360,28 +435,14 @@ export const BoardInfoPage = ({
                             className="hidden md:block text-sm cursor-pointer bg-input"
                         />
                     </Link>
-                    <Button
-                        variant={"default"}
-                        className="relative cursor-pointer dark:text-white dark:hover:text-white hover:text-gray-700"
+
+                    <Dialog
+                        open={isCreateTaskOpen}
+                        onOpenChange={setIsCreateTaskOpen}
                     >
-                        <Bell className="" />
-                        {/* Unread Badge */}
-                        <Badge
-                            className="absolute top-0 right-0 w-5 h-5 block"
-                            variant={"destructive"}
-                        >
-                            {notificationCount}
-                        </Badge>
-                    </Button>
-                    <Dialog>
-                        <DialogTrigger asChild>
-                            <Button
-                                variant={"defaultYellow"}
-                                className="cursor-pointer font-bold"
-                            >
-                                <PlusCircle /> New Task
-                            </Button>
-                        </DialogTrigger>
+                        <DialogButton variant="yellow">
+                            <PlusCircle /> New Task
+                        </DialogButton>
                         <DialogContent className="bg-(--auth-card)">
                             <DialogHeader>
                                 <DialogTitle>Create New Task</DialogTitle>
@@ -593,7 +654,7 @@ export const BoardInfoPage = ({
                                                 </FieldContent>
                                             </div>
                                         </FieldGroup>
-                                        <FieldLabel
+                                        {/* <FieldLabel
                                             htmlFor="assignees"
                                             className="text-(--text-2)"
                                         >
@@ -613,7 +674,7 @@ export const BoardInfoPage = ({
                                                         {errors["assigneeIds"]}
                                                     </FieldError>
                                                 )}
-                                        </FieldContent>
+                                        </FieldContent> */}
                                         <div className="flex bg-(--raised) p-3 rounded-lg border border-border items-center justify-between">
                                             <div className="flex flex-col">
                                                 <span className="text-(--text-3) text-xs">
@@ -625,14 +686,10 @@ export const BoardInfoPage = ({
                                         <hr />
                                         <div className="flex justify-end gap-2">
                                             <Button
-                                                className="cursor-pointer"
-                                                type="button"
-                                            >
-                                                Cancel
-                                            </Button>
-                                            <Button
+                                                isLoading={mutation.isPending}
                                                 variant={"defaultYellow"}
                                                 className="cursor-pointer"
+                                                disabled={mutation.isPending}
                                             >
                                                 Create Task
                                             </Button>
@@ -697,7 +754,7 @@ export const BoardInfoPage = ({
                         </Badge>
                     </div>
                     <div className="flex gap-2">
-                        <Select>
+                        {/* <Select>
                             <SelectTrigger className=" cursor-pointer border-2 hover:border-white! transition duration-300">
                                 <SelectValue
                                     className=""
@@ -712,7 +769,7 @@ export const BoardInfoPage = ({
                                     <SelectItem value="s">Updated</SelectItem>
                                 </SelectGroup>
                             </SelectContent>
-                        </Select>
+                        </Select> */}
                         <Dialog>
                             <DialogTrigger>
                                 <Button className="cursor-pointer hover:border-white border-2">
@@ -727,81 +784,134 @@ export const BoardInfoPage = ({
                                     Drag to reorder columns. Max 10 columns per
                                     board.
                                 </DialogDescription>
-                                <form onSubmit={handleReOrder}>
-                                    <div className="col-list border-b border-b-border pb-3">
-                                        {query.data?.map((column, index) => {
-                                            return (
-                                                <div
-                                                    key={`col_item_${column.id}`}
-                                                    className="col-item"
-                                                    draggable
-                                                    onDragStart={(e) => {
-                                                        e.dataTransfer.setData(
-                                                            "text/plain",
-                                                            index.toString(),
+                                {
+                                    <>
+                                        <form onSubmit={handleReOrder}>
+                                            <div className="col-list border-b border-b-border pb-3">
+                                                {query.data?.map(
+                                                    (column, index) => {
+                                                        return (
+                                                            <div
+                                                                key={`col_item_${column.id}`}
+                                                                className="col-item"
+                                                                draggable
+                                                                onDragStart={(
+                                                                    e,
+                                                                ) => {
+                                                                    e.dataTransfer.setData(
+                                                                        "text/plain",
+                                                                        index.toString(),
+                                                                    );
+                                                                    handleDragStart(
+                                                                        index,
+                                                                    );
+                                                                }}
+                                                                onDragOver={
+                                                                    handleDragOver
+                                                                }
+                                                                onDrop={(e) => {
+                                                                    e.preventDefault();
+                                                                    handleDrop(
+                                                                        index,
+                                                                    );
+                                                                }}
+                                                            >
+                                                                <span>⠿</span>
+                                                                <Input
+                                                                    type="text"
+                                                                    defaultValue={
+                                                                        column.name
+                                                                    }
+                                                                    name="name"
+                                                                />
+                                                                <span
+                                                                    style={{
+                                                                        fontSize:
+                                                                            "11px",
+                                                                        color: "var(--text-3)",
+                                                                        fontFamily:
+                                                                            "'IBM Plex Mono',monospace",
+                                                                    }}
+                                                                >
+                                                                    pos:
+                                                                    {
+                                                                        column.position
+                                                                    }
+                                                                </span>
+                                                                <Button
+                                                                    variant={
+                                                                        "destructive"
+                                                                    }
+                                                                    disabled={
+                                                                        column.name ===
+                                                                            "Done" ||
+                                                                        mutationDelCol.isPending
+                                                                    }
+                                                                    className="cursor-pointer"
+                                                                    onClick={() =>
+                                                                        handleDeleteColumn(
+                                                                            column.id,
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <X />
+                                                                </Button>
+                                                            </div>
                                                         );
-                                                        handleDragStart(index);
-                                                    }}
-                                                    onDragOver={handleDragOver}
-                                                    onDrop={(e) => {
-                                                        e.preventDefault();
-                                                        handleDrop(index);
-                                                    }}
-                                                >
-                                                    <span>⠿</span>
-                                                    <Input
-                                                        type="text"
-                                                        defaultValue={
-                                                            column.name
-                                                        }
-                                                        name="name"
-                                                    />
-                                                    <span
-                                                        style={{
-                                                            fontSize: "11px",
-                                                            color: "var(--text-3)",
-                                                            fontFamily:
-                                                                "'IBM Plex Mono',monospace",
-                                                        }}
-                                                    >
-                                                        pos:{column.position}
-                                                    </span>
-                                                    <Button
-                                                        variant={"destructive"}
-                                                        disabled={
-                                                            column.name ===
-                                                            "Done"
-                                                        }
-                                                        className="cursor-pointer"
-                                                    >
-                                                        <X />
-                                                    </Button>
-                                                </div>
-                                            );
-                                        })}
-                                        <Button
-                                            variant={"outline"}
-                                            className="dark:border-border! cursor-pointer hover:bg-(--hover)! dark:bg-(--surface)"
-                                        >
-                                            + Add Column
-                                        </Button>
-                                    </div>
-                                    <div className=" flex justify-end gap-2">
-                                        <Button
-                                            type="button"
-                                            variant={"outline"}
-                                            className="cursor-pointer rounded-lg hover:bg-(--hover)! dark:border-border"
-                                        >
-                                            Cancel
-                                        </Button>
+                                                    },
+                                                )}
+                                            </div>
+                                        </form>
+
                                         <Button
                                             variant={"defaultYellow"}
-                                            className="cursor-pointer rounded-lg bg-(--amber) text-black font-bold"
+                                            className="cursor-pointer"
+                                            onClick={() =>
+                                                setAddColumnFormOpen(
+                                                    !addColumnFormOpen,
+                                                )
+                                            }
                                         >
-                                            Save Order
+                                            {addColumnFormOpen
+                                                ? "Close"
+                                                : "Open"}{" "}
+                                            Column Form
                                         </Button>
-                                    </div>
-                                </form>
+                                    </>
+                                }
+
+                                {addColumnFormOpen && (
+                                    <form
+                                        action=""
+                                        id="change-column-name"
+                                        onSubmit={handleAddColumn}
+                                    >
+                                        <div>
+                                            <label htmlFor="col-name">
+                                                Column Name
+                                            </label>
+                                            <Input
+                                                id="col-name"
+                                                name="name"
+                                                className="mt-4"
+                                                placeholder="Enter Column Name"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="flex gap-2 mt-2">
+                                            <Button
+                                                variant={"defaultYellow"}
+                                                className="cursor-pointer border-border border-3 dark:hover:border-[var(--amber-dim)] hover:scale-105"
+                                                type="submit"
+                                                disabled={
+                                                    mutationAddCol.isPending
+                                                }
+                                            >
+                                                + Add Column
+                                            </Button>
+                                        </div>
+                                    </form>
+                                )}
                             </DialogContent>
                         </Dialog>
                     </div>
@@ -819,6 +929,7 @@ export const BoardInfoPage = ({
                                 key={`column_card_${column.id}_${index}`}
                                 tasks={column.tasksInsideColumn}
                                 title={column.name}
+                                setIsCreateTaskOpen={setIsCreateTaskOpen}
                             />
                         );
                     })}

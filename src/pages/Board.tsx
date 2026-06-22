@@ -1,4 +1,3 @@
-import { axiosInstance, boardEndPoints, workspaceEndPoints } from "@/api/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -6,7 +5,6 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog";
 import {
     Field,
@@ -17,14 +15,8 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { Bell, Loader, Loader2, PlusCircle } from "lucide-react";
-import { Link, useLocation, useParams } from "react-router-dom";
-import { AxiosError } from "axios";
-import { toast } from "sonner";
-import { useUser } from "@/context/userContext";
-import { useEffect, useState } from "react";
-import { getUrl } from "@/helpers/helpers";
+import { Loader, Loader2, PlusCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 import { BoardCard } from "@/components/Board";
 import {
     Select,
@@ -36,19 +28,10 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { InviteMemberDialog } from "@/components/InviteMemberDialog";
-import { useSocket } from "@/context/useSocket";
 import { WorkspaceDashboard } from "@/components/WorkspaceDashboard";
+import { DialogButton } from "../components/DialogButton";
+import { useBoards } from "../hooks/useBoards";
 
-interface ErrorResponse {
-    message: string;
-}
-
-interface CreateBoardDto {
-    name: string;
-    description: string;
-    backgroundColor: string;
-    visibility: string;
-}
 export interface Visibility {
     PUBLIC: "PUBLIC";
     PRIVATE: "PRIVATE";
@@ -149,141 +132,42 @@ export interface dashboardResponse {
 //   joinedAt: string;
 //   user: User;
 // }
-interface Board {
-    id: string;
-    name: string;
-    description: string;
-    backgroundColor: string;
-    isArchived: boolean;
-    createdAt: string;
-    updatedAt?: string;
-    archivedAt: string;
-    visibility: string;
-    deletedAt: string | null;
-}
-// interface WorkspaceDto {
-//   id: string;
-//   name: string;
-//   slug: string;
-//   description: string;
-//   isPrivate: false;
-//   createdAt: string;
-//   updatedAt: string;
-//   owner: User;
-//   members: WorkspaceMember[];
-
-//   boards: Board[];
+// interface Board {
+//     id: string;
+//     name: string;
+//     description: string;
+//     backgroundColor: string;
+//     isArchived: boolean;
+//     createdAt: string;
+//     updatedAt?: string;
+//     archivedAt: string;
+//     visibility: string;
+//     deletedAt: string | null;
 // }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-// interface GetWorkspacesDto {
-//   workspaces: WorkspaceDto[];
-//   workspaceCount: number;
-//   pageCount: number;
-// }
-
-export const BoardsPage = ({
-    notificationCount = 0,
-    // setPrevWorkspace,
-}: {
-    notificationCount: number | null;
-    // setPrevWorkspace;
-}) => {
-    const location = useLocation();
-    const { token } = useUser();
-    console.log(token);
-    const [errors, setErrors] = useState(null);
-    const [active, setActive] = useState("all");
-    const { workspaceId } = useParams();
-    const { joinWorkspaceRoom } = useSocket();
-
-    useEffect(() => {
-        // setPrevWorkspace(workspaceId);
-        if (workspaceId) {
-            joinWorkspaceRoom(workspaceId);
-        }
-    }, [workspaceId]);
-
-    // create workspace
-    const mutation = useMutation({
-        mutationKey: ["create-board"],
-        mutationFn: async (formData: CreateBoardDto) => {
-            const response = await axiosInstance.post(
-                getUrl(boardEndPoints.getOrCreateBoards, { workspaceId }),
-                formData,
-                { headers: { Authorization: `Bearer ${token}` } },
-            );
-            return response.data;
-        },
-        onSuccess(data) {
-            console.log(data);
-            toast.success("board has been created successfully", {
-                id: "create-board",
-            });
-            query.refetch();
-        },
-        onError(error: AxiosError<ErrorResponse>) {
-            toast.error(error.response?.data.message, {
-                position: "top-center",
-                id: "create-board",
-            });
-            let errs: any = {};
-            if (
-                error.response?.data.message &&
-                Array.isArray(error.response.data.message)
-            ) {
-                for (const err of error.response.data.message) {
-                    if (typeof err === "string") {
-                        errs[err.split(" ")[0]] = err;
-                    }
-                }
-                setErrors(errs);
-            }
-        },
-    });
-    const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        // eslint-disable-next-line no-debugger
-        debugger;
-        const formData = new FormData(e.target);
-        const data = Object.fromEntries(
-            formData.entries(),
-        ) as unknown as CreateBoardDto;
-        mutation.mutate(data);
-    };
-
-    // get workspaces
-    const query = useQuery({
-        queryKey: ["get-boards"],
-        queryFn: async () => {
-            const response = await axiosInstance.get<Board[]>(
-                getUrl(boardEndPoints.getOrCreateBoards, { workspaceId }),
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                },
-            );
-            return response.data;
-        },
-    });
-    const query2 = useQuery({
-        queryKey: [`get-dashboard-${workspaceId}`],
-        queryFn: async () => {
-            console.log("axios instance", axiosInstance.defaults);
-            const response = await axiosInstance.get<dashboardResponse>(
-                getUrl(workspaceEndPoints.getWorkspaceDashboard, {
-                    workspaceId,
-                }),
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                },
-            );
-            return response.data;
-        },
-    });
+export const BoardsPage = (
+    {
+        // notificationCount = 0,
+        // setPrevWorkspace,
+    }: {
+        notificationCount: number | null;
+        // setPrevWorkspace;
+    },
+) => {
+    const {
+        workspaceId,
+        location,
+        errors,
+        activeFilter,
+        setActiveFilter,
+        dashboard,
+        isDashboardLoading,
+        isDashboardSuccess,
+        boards,
+        isBoardsPending,
+        isBoardsSuccess,
+        handleCreateBoard,
+    } = useBoards();
 
     return (
         <div className="flex-col flex w-full">
@@ -306,34 +190,16 @@ export const BoardsPage = ({
                             className="hidden md:block text-sm cursor-pointer bg-input"
                         />
                     </Link>
-                    <Button
-                        variant={"default"}
-                        className="relative cursor-pointer dark:text-white dark:hover:text-white hover:text-gray-700"
-                    >
-                        <Bell className="" />
-                        {/* Unread Badge */}
-                        <Badge
-                            className="absolute top-0 right-0 w-5 h-5 block"
-                            variant={"destructive"}
-                        >
-                            {notificationCount}
-                        </Badge>
-                    </Button>
                     <Dialog>
-                        <DialogTrigger>
-                            <Button
-                                variant={"defaultYellow"}
-                                className="cursor-pointer font-bold"
-                            >
-                                <PlusCircle /> New Board
-                            </Button>
-                        </DialogTrigger>
+                        <DialogButton variant="yellow">
+                            <PlusCircle /> New Board
+                        </DialogButton>
                         <DialogContent className="bg-(--auth-card)">
                             <DialogHeader>
                                 <DialogTitle>New Workspace</DialogTitle>
                             </DialogHeader>
                             <div>
-                                <form action="" onSubmit={handleSubmit}>
+                                <form action="" onSubmit={handleCreateBoard}>
                                     <Field className="">
                                         <FieldLabel
                                             htmlFor="name"
@@ -462,12 +328,6 @@ export const BoardsPage = ({
                                         <hr />
                                         <div className="flex justify-end gap-2">
                                             <Button
-                                                className="cursor-pointer"
-                                                type="button"
-                                            >
-                                                Cancel
-                                            </Button>
-                                            <Button
                                                 variant={"defaultYellow"}
                                                 className="cursor-pointer"
                                             >
@@ -486,22 +346,22 @@ export const BoardsPage = ({
                 </div>
             </header>
             {/* Workspace Dashboard */}
-            {query2.isLoading && (
+            {isDashboardLoading && (
                 <div className="w-full h-50 flex justify-center items-center">
                     getting workspace data...
                     <Loader className="animate-spin " />
                 </div>
             )}
-            {query2.isSuccess && (
+            {isDashboardSuccess && (
                 <WorkspaceDashboard
-                    totalTasks={query2.data?.totalTasks ?? 0}
-                    completedTasks={query2.data?.completedTasks ?? 0}
-                    overdueTasks={query2.data?.overdueTasks ?? 0}
-                    chartData={query2.data?.tasksByPriority}
-                    completedTrendChartData={query2.data?.completionTrend}
-                    activeBoardData={query2.data?.mostActiveBoards}
-                    tasksByAssignee={query2.data?.tasksByAssignee}
-                    recentActivity={query2.data?.recentActivity}
+                    totalTasks={dashboard?.totalTasks ?? 0}
+                    completedTasks={dashboard?.completedTasks ?? 0}
+                    overdueTasks={dashboard?.overdueTasks ?? 0}
+                    chartData={dashboard?.tasksByPriority}
+                    completedTrendChartData={dashboard?.completionTrend}
+                    activeBoardData={dashboard?.mostActiveBoards}
+                    tasksByAssignee={dashboard?.tasksByAssignee}
+                    recentActivity={dashboard?.recentActivity}
                 />
             )}
 
@@ -518,27 +378,27 @@ export const BoardsPage = ({
                 <div className="main-workspace-filters ">
                     <Badge
                         variant={"defaultYellow"}
-                        className={`main-workspace-filter ${active !== "all" ? "inactive" : ""}`}
+                        className={`main-workspace-filter ${activeFilter !== "all" ? "inactive" : ""}`}
                         onClick={() => {
-                            setActive("all");
+                            setActiveFilter("all");
                         }}
                     >
                         All
                     </Badge>
                     <Badge
                         variant={"defaultYellow"}
-                        className={`main-workspace-filter ${active !== "active" ? "inactive" : ""}`}
+                        className={`main-workspace-filter ${activeFilter !== "active" ? "inactive" : ""}`}
                         onClick={() => {
-                            setActive("active");
+                            setActiveFilter("active");
                         }}
                     >
                         Active
                     </Badge>
                     <Badge
                         variant={"defaultYellow"}
-                        className={`main-workspace-filter ${active !== "archived" ? "inactive" : ""}`}
+                        className={`main-workspace-filter ${activeFilter !== "archived" ? "inactive" : ""}`}
                         onClick={() => {
-                            setActive("archived");
+                            setActiveFilter("archived");
                         }}
                     >
                         Archived
@@ -546,15 +406,15 @@ export const BoardsPage = ({
                 </div>
             </div>
             <hr />
-            {query.isPending && (
+            {isBoardsPending && (
                 <div className="justify-center flex w-full items-center h-50">
                     <Loader2 className="animate-spin" /> Loading
                 </div>
             )}
             {/* Board list */}
-            {query.isSuccess && (
+            {isBoardsSuccess && (
                 <div className="workspace-cards">
-                    {query.data?.map((board) => {
+                    {boards?.map((board) => {
                         // let role = 'member'
                         // if(workspace.owner.id === user.id){
                         //     role = 'owner'
@@ -567,6 +427,7 @@ export const BoardsPage = ({
                         // }
                         return (
                             <Link
+                                key={board.id}
                                 to={`/boards/${board.id}`}
                                 state={{
                                     boardBackground: board.backgroundColor,

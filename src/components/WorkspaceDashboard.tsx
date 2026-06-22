@@ -17,13 +17,13 @@ export const WorkspaceDashboard = ({
     recentActivity,
 }: {
     chartData?: Record<string, number>;
-    totalTasks: number;
-    completedTasks: number;
-    overdueTasks: number;
+    totalTasks?: number;
+    completedTasks?: number;
+    overdueTasks?: number;
     completedTrendChartData?: { date: string; count: number }[];
-    activeBoardData: dashboardResponse["mostActiveBoards"];
-    tasksByAssignee: dashboardResponse["tasksByAssignee"];
-    recentActivity: dashboardResponse["recentActivity"];
+    activeBoardData?: dashboardResponse["mostActiveBoards"];
+    tasksByAssignee?: dashboardResponse["tasksByAssignee"];
+    recentActivity?: dashboardResponse["recentActivity"];
 }) => {
     return (
         <div className="workspace-dashboard">

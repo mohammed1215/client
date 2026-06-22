@@ -14,7 +14,7 @@ const colors = [
 export const ActiveBoardCard = ({
     activeBoardData,
 }: {
-    activeBoardData: dashboardResponse["mostActiveBoards"];
+    activeBoardData?: dashboardResponse["mostActiveBoards"];
 }) => {
     return (
         <GlobalCard className="active-boards" title="Most active boards">

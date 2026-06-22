@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 export const axiosInstance = axios.create({
     baseURL: import.meta.env.VITE_BACKEND,
@@ -6,6 +6,19 @@ export const axiosInstance = axios.create({
         Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
 });
+
+axiosInstance.interceptors.response.use(
+    (response) => response,
+    (error: AxiosError) => {
+        if (error.response && error.response.status === 401) {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            window.dispatchEvent(new Event("auth-unauthorized"));
+        }
+
+        return Promise.reject(error);
+    },
+);
 
 export const userApiEndPoints = {
     getMe: "/api/v1/users/me",
@@ -38,6 +51,7 @@ export const boardEndPoints = {
 export const columnEndPoints = {
     getOrCreateColumn: "/api/v1/boards/{boardId}/columns",
     reOrderColumn: `/api/v1/boards/{boardId}/columns/reorder`,
+    deleteColumn: `/api/v1/boards/{boardId}/columns/{columnId}`,
 };
 
 export const taskEndpoints = {

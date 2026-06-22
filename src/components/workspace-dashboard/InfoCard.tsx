@@ -15,7 +15,7 @@ export const InfoCard = ({
             <h3
                 style={{
                     fontSize: "15px",
-                    color: `${kind === "total" ? "var(--amber-dim);" : kind === "overdue" ? "#f14949" : "white"}`,
+                    color: `${kind === "total" ? "var(--amber-dim)" : kind === "overdue" ? "#f14949" : "white"}`,
                     fontWeight: "500",
                 }}
             >

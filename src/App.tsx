@@ -3,7 +3,6 @@ import { SignUpPage } from "./pages/SignUp.tsx";
 import { LoginPage } from "./pages/Login.tsx";
 import { LoginHeader } from "./components/Layouts/LoginHeader.tsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { DashboardContentLayout } from "./components/Layouts/DashboardContentLayout.tsx";
 import { WorkspacePage } from "./pages/Workspace.tsx";
 import { BoardsPage } from "./pages/Board.tsx";
 import { BoardInfoPage } from "./pages/BoardInfo.tsx";
@@ -16,13 +15,13 @@ import { AcceptInvitationPage } from "./pages/AcceptInvitateionPage.tsx";
 import { VerifyEmail } from "./pages/VerifyEmail.tsx";
 import { useState } from "react";
 import { SocketLayer } from "./socket/socket.tsx";
+import { ProfilePage } from "./pages/ProfilePage.tsx";
 
 const queryClient = new QueryClient();
 function App() {
     const [notificationCount, setNotificationCount] = useState<number | null>(
         null,
     );
-    const [prevWorkspace, setPrevWorkspace] = useState<string | null>(null);
     return (
         <QueryClientProvider client={queryClient}>
             <Routes>
@@ -40,16 +39,16 @@ function App() {
                     <Route element={<SocketLayer />}>
                         <Route
                             path="/"
-                            element={<Navigate to="/dashboard" />}
+                            element={<Navigate to="/workspaces" />}
                         />
-                        <Route
+                        {/* <Route
                             path="/dashboard"
                             element={
                                 <DashboardContentLayout
                                     notificationCount={notificationCount}
                                 />
                             }
-                        />
+                        /> */}
                         <Route
                             path="/workspaces"
                             element={
@@ -82,6 +81,7 @@ function App() {
                             path="/accept-invite"
                             element={<AcceptInvitationPage />}
                         />
+                        <Route path="/profile" element={<ProfilePage />} />
                     </Route>
                 </Route>
             </Routes>

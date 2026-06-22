@@ -11,13 +11,11 @@ export const ItemList = ({
     type,
     taskCount,
     badgeColor,
-    firstBadgeColor,
 }: {
     title: string;
     type?: string;
     taskCount: number;
     badgeColor: string;
-    firstBadgeColor: string;
 }) => {
     return (
         <div

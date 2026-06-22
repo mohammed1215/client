@@ -10,26 +10,23 @@ import {
     SidebarMenuItem,
     SidebarProvider,
 } from "@/components/ui/sidebar";
-import {
-    LayoutDashboard,
-    FolderGit2,
-    Bell,
-    ListChecks,
-    Settings,
-    Search,
-} from "lucide-react"; // Make sure to npm install lucide-react
+import { FolderGit2, Search } from "lucide-react"; // Make sure to npm install lucide-react
 import { AvatarFallback, AvatarImage, Avatar } from "./ui/avatar";
 
 import { useUser } from "@/context/userContext";
 
 import { Link } from "react-router-dom";
+import { Button } from "./ui/button";
 
 export default function DashboardLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    const { user } = useUser();
+    const { user, logout } = useUser();
+    const handleLogout = () => {
+        logout();
+    };
     return (
         // 1. Provider wraps everything!
         <SidebarProvider>
@@ -61,20 +58,10 @@ export default function DashboardLayout({
                 </SidebarHeader>
 
                 <SidebarContent>
-                    <SidebarGroup>
+                    <SidebarGroup className="h-full">
                         <SidebarGroupLabel>Application</SidebarGroupLabel>
-                        <SidebarGroupContent>
-                            <SidebarMenu>
-                                {/* Dummy Navigation Items */}
-                                <SidebarMenuItem>
-                                    <SidebarMenuButton asChild>
-                                        <a href="#">
-                                            <LayoutDashboard />
-                                            <span>Home</span>
-                                        </a>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-
+                        <SidebarGroupContent className="h-full">
+                            <SidebarMenu className="flex flex-col h-full">
                                 <SidebarMenuItem>
                                     <SidebarMenuButton asChild>
                                         <Link to="/workspaces">
@@ -86,65 +73,44 @@ export default function DashboardLayout({
 
                                 <SidebarMenuItem>
                                     <SidebarMenuButton asChild>
-                                        <a href="#">
-                                            <ListChecks />
-                                            <span>My Tasks</span>
-                                        </a>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                                <SidebarMenuItem>
-                                    <SidebarMenuButton asChild>
-                                        <a href="#">
-                                            <Bell />
-                                            <span>Inbox</span>
-                                            <span className="rounded-full bg-(--logo-color) w-5 h-5 ml-auto flex justify-center items-center">
-                                                3
-                                            </span>
-                                        </a>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                                <SidebarMenuItem>
-                                    <SidebarMenuButton asChild>
-                                        <a href="#">
-                                            <Settings />
-                                            <span>Settings</span>
-                                        </a>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                                <SidebarMenuItem>
-                                    <SidebarMenuButton asChild>
                                         <Link to="/search">
                                             <Search />
                                             <span>Search</span>
                                         </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
-                                <SidebarMenuItem className=" border-t border-t-border pt-4">
+                                <SidebarMenuItem className=" border-t border-t-border pt-4 mt-auto">
                                     <SidebarMenuButton asChild>
-                                        <div>
+                                        <Link to={"/profile"} className="py-5">
                                             <Avatar>
                                                 <AvatarImage
-                                                    src={user.avatar}
+                                                    src={user?.avatarUrl ?? ""}
                                                 />
-                                                <img
-                                                    src={user.avatarUrl}
-                                                    alt=""
-                                                />
+
                                                 <AvatarFallback className="dark:bg-[#30230f] dark:border-(--primary-yellow) dark:text-(--primary-yellow) dark:border text-white font-bold">
-                                                    {user.firstname[0]}
+                                                    {user?.firstname[0]}
                                                 </AvatarFallback>
                                             </Avatar>
                                             <div>
                                                 <h2 className="">
-                                                    {user.firstname}{" "}
-                                                    {user.lastname}
+                                                    {user?.firstname}{" "}
+                                                    {user?.lastname}
                                                 </h2>
                                                 <p className="text-xs text-(--text)">
-                                                    {user.email}
+                                                    {user?.email}
                                                 </p>
                                             </div>
-                                        </div>
+                                        </Link>
                                     </SidebarMenuButton>
+                                </SidebarMenuItem>
+                                <SidebarMenuItem className="">
+                                    <Button
+                                        className="cursor-pointer hover:bg-destructive/90 w-full mt-1 hover:scale-105 hover:border-4"
+                                        variant={"destructive"}
+                                        onClick={handleLogout}
+                                    >
+                                        Logout
+                                    </Button>
                                 </SidebarMenuItem>
                             </SidebarMenu>
                         </SidebarGroupContent>
@@ -156,20 +122,3 @@ export default function DashboardLayout({
         </SidebarProvider>
     );
 }
-
-/**
- * {
-  "id": "8160780f-b4fd-44eb-a381-2d492bbed3a7",
-  "email": "mohammedelbanawey264@gmail.com",
-  "firstname": "mohammed",
-  "lastname": "elbanawey",
-  "avatarUrl": "http://localhost:3000/api/v1/images/391186_1771336664701_Screenshot from 2026-02-13 18-46-49.png",
-  "bio": null,
-  "emailVerified": true,
-  "emailPreference": "immediate",
-  "isActive": false,
-  "createdAt": "2026-02-16T19:13:15.684Z",
-  "updatedAt": "2026-02-17T14:06:34.382Z",
-  "lastLoginAt": null
-}
- */
