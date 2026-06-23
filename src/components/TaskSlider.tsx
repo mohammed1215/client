@@ -75,6 +75,9 @@ export const TaskSlider = ({
         commentText,
         mentionData,
         setCommentText,
+        setFileName,
+        isUploadingAttachment,
+        progress,
     } = useTaskSlider(taskId);
 
     return (
@@ -361,15 +364,30 @@ export const TaskSlider = ({
                                             name="file"
                                             id="file"
                                             className="hidden"
+                                            onChange={(e) =>
+                                                setFileName(
+                                                    e?.target?.value
+                                                        .split("\\")
+                                                        .at(-1) ?? "",
+                                                )
+                                            }
                                             type="file"
                                         />
                                     </Label>
                                     <Button
                                         variant={"defaultYellow"}
                                         className="cursor-pointer mx-auto block mt-5"
+                                        isLoading={isUploadingAttachment}
                                     >
                                         Upload
                                     </Button>
+                                    {isUploadingAttachment && (
+                                        <progress
+                                            className="w-full"
+                                            value={progress}
+                                            max={100}
+                                        ></progress>
+                                    )}
                                 </form>
                             </TabsContent>
                             <TabsContent value="activity" className="mt-4">

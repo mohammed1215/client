@@ -7,13 +7,14 @@ import {
 } from "../api/api";
 import { getUrl } from "../helpers/helpers";
 import { useMemo, useRef, useState } from "react";
-import type { CreateCommentDto, Task } from "../pages/BoardInfo";
+import type { CreateCommentDto, Task } from "../types/types";
 import { useUser } from "../context/userContext";
 import { toast } from "sonner";
 
 export const useTaskSlider = (taskId: string | null) => {
     const [assigneeIds, setAssigneeIds] = useState<any>([]);
     const [commentText, setCommentText] = useState("");
+    const [progress, setProgress] = useState(0);
     const { token } = useUser();
     const queryClient = useQueryClient();
     const queryTaskDetails = useQuery({
@@ -193,12 +194,23 @@ export const useTaskSlider = (taskId: string | null) => {
         setCommentText("");
     }
 
-    const mutation4 = useMutation({
+    const mutationUploadAttachment = useMutation({
         mutationKey: ["upload-attachment"],
         mutationFn: async (formData: FormData) => {
             const response = await axiosInstance.post(
                 getUrl(attahcmentEndPoints.getOrUploadAttachment, { taskId }),
                 formData,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                    onUploadProgress(progressEvent) {
+                        if (progressEvent.total) {
+                            setProgress(
+                                (progressEvent.loaded / progressEvent.total) *
+                                    100,
+                            );
+                        }
+                    },
+                },
             );
             return response.data;
         },
@@ -210,7 +222,8 @@ export const useTaskSlider = (taskId: string | null) => {
     function handleUploadAttachment(e: React.SubmitEvent) {
         e.preventDefault();
         const formData = new FormData(e.target);
-        mutation4.mutate(formData);
+        setProgress(0);
+        mutationUploadAttachment.mutate(formData);
     }
 
     return {
@@ -233,5 +246,8 @@ export const useTaskSlider = (taskId: string | null) => {
         commentText,
         setCommentText,
         mentionData,
+        setFileName,
+        isUploadingAttachment: mutationUploadAttachment.isPending,
+        progress,
     };
 };

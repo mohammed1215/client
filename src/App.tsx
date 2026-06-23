@@ -63,8 +63,8 @@ function App() {
                             path="/workspaces/:workspaceId/boards"
                             element={
                                 <BoardsPage
-                                    notificationCount={notificationCount}
-                                    // setPrevWorkspace={setPrevWorkspace}
+                                // notificationCount={notificationCount}
+                                // setPrevWorkspace={setPrevWorkspace}
                                 />
                             }
                         />
