@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import type { Task } from "../pages/BoardInfo";
+import type { Task } from "../types/types";
 
 export const ColumnCard = ({
     title,
@@ -10,9 +10,9 @@ export const ColumnCard = ({
 }: {
     title: string;
     tasks: Array<Task>;
-    setSelectedTask: Function;
+    setSelectedTask: (selectedTask: string) => void;
     activePanel?: boolean;
-    setActivePanel: Function;
+    setActivePanel: (activePanel: boolean) => void;
     setIsCreateTaskOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
     return (

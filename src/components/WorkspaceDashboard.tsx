@@ -1,7 +1,7 @@
 import { InfoCard } from "./workspace-dashboard/InfoCard";
 import { PriorityCard } from "./workspace-dashboard/PriorityCard";
 import { CompletionTrendCard } from "./workspace-dashboard/CompletionTrendCard";
-import type { dashboardResponse } from "@/pages/Board";
+import type { dashboardResponse } from "../types/types";
 import { ActiveBoardCard } from "./workspace-dashboard/ActiveBoardCard";
 import { TaskByAssigneeCard } from "./workspace-dashboard/TaskByAssigneeCard";
 import { RecentActivityCard } from "./workspace-dashboard/RecentActivityCard";

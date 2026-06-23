@@ -14,7 +14,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { UserPlus, Link2 } from "lucide-react";
+import { UserPlus } from "lucide-react";
 import { Textarea } from "./ui/textarea";
 import { useMutation } from "@tanstack/react-query";
 import { axiosInstance, workspaceEndPoints } from "@/api/api";
@@ -23,7 +23,6 @@ import { useState } from "react";
 import { FieldError } from "./ui/field";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
-// type BoardRole = "member" | "admin" | "viewer";
 type WorkspaceRole = "member" | "admin" | "viewer";
 export const InviteMemberBoardDialog = ({
     workspaceId,

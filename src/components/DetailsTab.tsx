@@ -1,5 +1,5 @@
 import { TabsContent } from "./ui/tabs";
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "./ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Checkbox } from "./ui/checkbox";
 import {
@@ -11,8 +11,9 @@ import {
 } from "./ui/select";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import type { Column, Task } from "../pages/BoardInfo";
+
 import { DialogButton } from "./DialogButton";
+import type { Column, Task } from "../types/types";
 
 export const DetailsTaskTab = ({
     columns,

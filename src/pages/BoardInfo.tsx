@@ -1,4 +1,3 @@
-import api, { axiosInstance, columnEndPoints, taskEndpoints } from "@/api/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,19 +18,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell, Loader2, PlusCircle, X } from "lucide-react";
-import {
-    Link,
-    useLocation,
-    useParams,
-    useSearchParams,
-} from "react-router-dom";
-import { AxiosError } from "axios";
-import { toast } from "sonner";
-import { useUser } from "@/context/userContext";
-import { useDebugValue, useState } from "react";
-import { getUrl } from "@/helpers/helpers";
+import { Loader2, PlusCircle, X } from "lucide-react";
+import { Link } from "react-router-dom";
 import {
     Select,
     SelectContent,
@@ -45,351 +33,40 @@ import { ColumnCard } from "@/components/ColumnCard";
 import { TaskSlider } from "@/components/TaskSlider";
 import { InviteMemberBoardDialog } from "@/components/InviteMemberBoardDialog";
 import { DialogButton } from "../components/DialogButton";
-
-export interface ErrorResponse {
-    message: string;
-}
-
-export interface CreateBoardDto {
-    title: string;
-    description: string;
-    columnId: string;
-    priority: string;
-    dueDate: string;
-    estimatedHours: number;
-    assigneeIds?: string[];
-    tagIds?: string[];
-}
-export interface Visibility {
-    PUBLIC: "PUBLIC";
-    PRIVATE: "PRIVATE";
-    WORKSPACE: "WORKSPACE";
-}
-
-export interface User {
-    id: string;
-    email: string;
-    firstname: string;
-    lastname: string;
-    avatarUrl: string | null;
-    bio: string | null;
-    emailVerified: boolean | null;
-    emailPreference: string;
-    isActive: false;
-    createdAt: string;
-    updatedAt: string;
-    lastLoginAt: string | null;
-}
-
-export type SearchTypes = "ALL" | "TASKS" | "BOARDS";
-
-export interface SearchQueryDto {
-    q: string;
-    workspaceId?: string;
-    type?: SearchTypes;
-    page?: number;
-    limit?: number;
-}
-
-export interface WorkspaceMember {
-    id: string;
-    role: string;
-    joinedAt: string;
-    user: User;
-}
-export interface Board {
-    id: string;
-    name: string;
-    description: string;
-    backgroundColor: string;
-    isArchived: boolean;
-    createdAt: string;
-    updatedAt: string;
-    archivedAt: string;
-    visibility: string;
-    deletedAt: string | null;
-    members: any[];
-}
-
-export interface Column {
-    id: string;
-    name: string;
-    position: number;
-    createdAt: string;
-    tasksInsideColumn: Task[];
-}
-export interface CreateCommentDto {
-    content: string;
-    mentionedUserIds: string[];
-}
-export interface Task {
-    id: string;
-    taskNumber: string;
-    title: string;
-    description: string | null;
-    priority: string;
-    dueDate: string | null;
-    estimatedHours: number | null;
-    position: number;
-    createdAt: string;
-    updatedAt: string;
-    completedAt: string | null;
-    deletedAt: string | null;
-    board?: Board;
-    column?: Column;
-    createdBy?: User;
-    assignedTasks?: any[];
-    watchers?: Watcher[];
-    attachments?: Attachment[];
-    comment?: Comment[];
-    activities: any[];
-}
-
-export interface Attachment {
-    id: string;
-    filename: string;
-    originalFilename: string;
-    fileSize: number;
-    contentType: string;
-    storagePath: string;
-    createdAt: string;
-}
-export interface Comment {
-    id: string;
-    content: string;
-    isEdited: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-
-    // Relations
-    task?: Task;
-    author?: User;
-}
-export interface Watcher {
-    id: "3fc91524-1bf5-4734-80a2-398e1225989c";
-    watchedAt: "2026-02-21T20:39:19.922Z";
-    user?: User;
-}
-
-export interface WorkspaceDto {
-    id: string;
-    name: string;
-    slug: string;
-    description: string;
-    isPrivate: false;
-    createdAt: string;
-    updatedAt: string;
-    owner: User;
-    members: WorkspaceMember[];
-
-    boards: Board[];
-}
-
-export interface GetWorkspacesDto {
-    workspaces: WorkspaceDto[];
-    workspaceCount: number;
-    pageCount: number;
-}
+import { useBoardInfo } from "../hooks/useBoardInfo";
 
 export const BoardInfoPage = ({
     notificationCount = 0,
 }: {
     notificationCount: number | null;
 }) => {
-    const { token } = useUser();
-    const [errors, setErrors] = useState(null);
-    const [active, setActive] = useState("all");
-    const { boardId } = useParams();
-    const [draggedItem, setDraggedItem] = useState<number | null>(null);
-    const location = useLocation();
-    const [addColumnFormOpen, setAddColumnFormOpen] = useState(false);
-    const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
-    const [activePanel, setActivePanel] = useState(false);
-    const queryClient = useQueryClient();
-    const [_createdData, setCreatedData] = useState<CreateBoardDto | null>(
-        null,
-    );
-    const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-    // create task
-    const mutation = useMutation({
-        mutationKey: ["create-board-columns"],
-        mutationFn: async (formData: CreateBoardDto) => {
-            setCreatedData(formData);
-            const response = await axiosInstance.post(
-                getUrl(taskEndpoints.getTasksOfBoard, { boardId }),
-                formData,
-                { headers: { Authorization: `Bearer ${token}` } },
-            );
-            return response.data;
-        },
-        onSuccess(data) {
-            console.log(data);
-            toast.success("task has been created successfully", {
-                id: "create-board-columns",
-            });
-            queryClient.invalidateQueries({ queryKey: ["get-board-columns"] });
-        },
-        onError(error: AxiosError<ErrorResponse>) {
-            toast.error(error.response?.data.message, {
-                position: "top-center",
-                id: "create-board-columns",
-            });
-            let errs: any = {};
-            if (
-                error.response?.data.message &&
-                Array.isArray(error.response.data.message)
-            ) {
-                for (const err of error.response.data.message) {
-                    if (typeof err === "string") {
-                        errs[err.split(" ")[0]] = err;
-                    }
-                }
-                setErrors(errs);
-            }
-            setCreatedData(null);
-        },
-    });
-
-    // reorder columns
-    const mutationCol = useMutation({
-        mutationKey: ["reOrderColumns"],
-        mutationFn: async (formData: object) => {
-            const response = await axiosInstance.put(
-                getUrl(columnEndPoints.reOrderColumn, { boardId }),
-                formData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                },
-            );
-            return response.data;
-        },
-    });
-
-    const mutationAddCol = useMutation({
-        mutationFn: async (data: { name: string }) => {
-            toast.loading("adding column...", {
-                id: 4,
-                position: "top-center",
-            });
-            const response = await axiosInstance.post(
-                getUrl(api.columnEndPoints.getOrCreateColumn, { boardId }),
-                data,
-            );
-
-            return response.data;
-        },
-        onSuccess() {
-            toast.success("column has been added successfully", {
-                id: 4,
-                position: "top-center",
-            });
-
-            queryClient.refetchQueries({ queryKey: ["get-board-columns"] });
-        },
-        onError() {
-            toast.error("Something went wrong", {
-                id: 4,
-                position: "top-center",
-            });
-        },
-    });
-
-    const mutationDelCol = useMutation({
-        mutationFn: async (columnId: string) => {
-            toast.loading("deleting column", { id: 4, position: "top-center" });
-
-            const response = await axiosInstance.delete(
-                getUrl(api.columnEndPoints.deleteColumn, { boardId, columnId }),
-            );
-        },
-        onSuccess() {
-            toast.success("column  has been deleted successfully", {
-                id: 4,
-                position: "top-center",
-            });
-
-            queryClient.refetchQueries({ queryKey: ["get-board-columns"] });
-        },
-        onError() {
-            toast.error("something went wrong");
-        },
-    });
-
-    //add new column
-    const handleAddColumn = (e: React.SubmitEvent) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const data = Object.fromEntries(formData.entries()) as { name: string };
-        mutationAddCol.mutate(data);
-    };
-
-    // delete column
-    const handleDeleteColumn = (columnId: string) => {
-        mutationDelCol.mutate(columnId);
-    };
-
-    const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const data = Object.fromEntries(
-            formData.entries(),
-        ) as unknown as CreateBoardDto;
-        if (!data.assigneeIds) {
-            delete data.assigneeIds;
-        }
-        mutation.mutate(data);
-    };
-
-    // get board columns
-    const query = useQuery({
-        queryKey: ["get-board-columns"],
-        queryFn: async () => {
-            const response = await axiosInstance.get<Column[]>(
-                getUrl(columnEndPoints.getOrCreateColumn, { boardId }),
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                },
-            );
-            return response.data;
-        },
-    });
-
-    function handleDragStart(index: number) {
-        setDraggedItem(index);
-    }
-
-    function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
-        e.preventDefault();
-    }
-
-    function handleDrop(index: number) {
-        // Check for null specifically, as 0 is a valid index but falsy
-        if (query.data && draggedItem !== null) {
-            const newItems = [...query.data];
-            const [removed] = newItems.splice(draggedItem, 1);
-            newItems.splice(index, 0, removed);
-
-            for (let i = 0; i < newItems.length; i++) {
-                newItems[i].position = i;
-            }
-            // Update the cache
-            mutationCol.mutate({ newPosition: index, columnId: removed.id });
-            queryClient.setQueryData(["get-board-columns"], newItems);
-
-            setDraggedItem(null);
-        }
-    }
-
-    function handleReOrder(e: React.SubmitEvent) {
-        e.preventDefault();
-        console.log("reorderring");
-    }
-
-    if (query.isPending) {
+    const {
+        active,
+        activePanel,
+        addColumnFormOpen,
+        errors,
+        handleAddColumn,
+        handleDeleteColumn,
+        handleDragOver,
+        handleDragStart,
+        handleDrop,
+        handleReOrder,
+        handleSubmit,
+        isCreateTaskOpen,
+        isGettingBoardColumnsInfo,
+        location,
+        selectedTaskId,
+        setActive,
+        setActivePanel,
+        setAddColumnFormOpen,
+        setIsCreateTaskOpen,
+        setSelectedTaskId,
+        BoardColumnsData,
+        isCreatingTask,
+        isDeletingTask,
+        isAddingTask,
+    } = useBoardInfo();
+    if (isGettingBoardColumnsInfo) {
         return (
             <div className="justify-center flex w-full items-center h-100vh">
                 <Loader2 className="animate-spin" /> Loading
@@ -511,7 +188,7 @@ export const BoardInfoPage = ({
                                                         </SelectTrigger>
                                                         <SelectContent>
                                                             <SelectGroup>
-                                                                {query.data?.map(
+                                                                {BoardColumnsData?.map(
                                                                     (
                                                                         column,
                                                                     ) => {
@@ -686,10 +363,10 @@ export const BoardInfoPage = ({
                                         <hr />
                                         <div className="flex justify-end gap-2">
                                             <Button
-                                                isLoading={mutation.isPending}
+                                                isLoading={isCreatingTask}
                                                 variant={"defaultYellow"}
                                                 className="cursor-pointer"
-                                                disabled={mutation.isPending}
+                                                disabled={isCreatingTask}
                                             >
                                                 Create Task
                                             </Button>
@@ -788,7 +465,7 @@ export const BoardInfoPage = ({
                                     <>
                                         <form onSubmit={handleReOrder}>
                                             <div className="col-list border-b border-b-border pb-3">
-                                                {query.data?.map(
+                                                {BoardColumnsData?.map(
                                                     (column, index) => {
                                                         return (
                                                             <div
@@ -845,7 +522,7 @@ export const BoardInfoPage = ({
                                                                     disabled={
                                                                         column.name ===
                                                                             "Done" ||
-                                                                        mutationDelCol.isPending
+                                                                        isDeletingTask
                                                                     }
                                                                     className="cursor-pointer"
                                                                     onClick={() =>
@@ -903,9 +580,7 @@ export const BoardInfoPage = ({
                                                 variant={"defaultYellow"}
                                                 className="cursor-pointer border-border border-3 dark:hover:border-[var(--amber-dim)] hover:scale-105"
                                                 type="submit"
-                                                disabled={
-                                                    mutationAddCol.isPending
-                                                }
+                                                disabled={isAddingTask}
                                             >
                                                 + Add Column
                                             </Button>
@@ -920,7 +595,7 @@ export const BoardInfoPage = ({
             <hr />
             <div className="column-wrapper">
                 <div className="column-cards">
-                    {query.data?.map((column, index) => {
+                    {BoardColumnsData?.map((column, index) => {
                         return (
                             <ColumnCard
                                 activePanel={activePanel}
@@ -936,7 +611,7 @@ export const BoardInfoPage = ({
                 </div>
             </div>
             <TaskSlider
-                columns={query.data}
+                columns={BoardColumnsData}
                 activePanel={activePanel}
                 setActivePanel={setActivePanel}
                 taskId={selectedTaskId}

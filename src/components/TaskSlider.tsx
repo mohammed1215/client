@@ -1,19 +1,11 @@
 import { formatterDate } from "@/helpers/helpers";
-import type { Column } from "@/pages/BoardInfo";
+import type { Column } from "../types/types";
 import { format } from "date-fns";
 import { Loader2, X } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Input } from "./ui/input";
-import { Checkbox } from "./ui/checkbox";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "./ui/select";
 import { Label } from "./ui/label";
 import { MentionsInput, Mention } from "react-mentions";
 import { ActivityTab } from "./ActivityTab";
