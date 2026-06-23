@@ -29,7 +29,10 @@ export const useProfile = () => {
                     api.userApiEndPoints.uploadAvatar,
                     formdata,
                     {
-                        headers: { "Content-Type": "multipart/form-data" },
+                        headers: {
+                            "Content-Type": "multipart/form-data",
+                            Authorization: localStorage.get("token"),
+                        },
                         onUploadProgress(p) {
                             if (!p.total) return;
                             setProgress((p.loaded / p.total) * 100);
