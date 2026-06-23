@@ -212,7 +212,8 @@ export const WorkspacePage = ({
                         <DialogTrigger asChild>
                             <Button
                                 variant={"defaultYellow"}
-                                className="cursor-pointer font-bold"
+                                size={"sm"}
+                                className="cursor-pointer font-bold text-[13px]"
                             >
                                 <PlusCircle /> Create Workspace
                             </Button>

@@ -109,7 +109,7 @@ export const TaskSlider = ({
                         <h2 className="task-title">
                             {queryTaskDetails?.title}
                         </h2>
-                        <div className="detail-meta-grid">
+                        <div className="detail-meta-grid grid-cols-1 sm:grid-cols-2">
                             <div className="meta-item">
                                 <div className="meta-label">Status</div>
                                 {/* <div className="meta-value">{queryTaskDetails.column}</div> */}
@@ -154,9 +154,9 @@ export const TaskSlider = ({
                         <Tabs defaultValue="details" className="tabs">
                             <TabsList
                                 variant={"line"}
-                                className="justify-start"
+                                className="justify-start overflow-x-auto overflow-y-none"
                             >
-                                <div className="w-fit">
+                                <div className="w-fit flex">
                                     <TabsTrigger value="details">
                                         Details
                                     </TabsTrigger>

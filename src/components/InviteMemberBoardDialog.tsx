@@ -44,6 +44,11 @@ export const InviteMemberBoardDialog = ({
                     workspaceId: workspaceId,
                 }),
                 data,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                },
             );
             return response.data;
         },

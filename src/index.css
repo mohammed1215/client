@@ -413,12 +413,19 @@ select {
     right: 0;
     top: 0;
     height: 100dvh;
-    width: 520px;
+    max-width: 700px;
     z-index: 10;
     background-color: var(--surface);
     transform: translateX(100%);
     transition: 0.2s;
     border: 1px solid var(--border);
+    overflow-y: auto;
+
+    width: 425px;
+    @media (width < 426px) {
+        scrollbar-width: none;
+        width: 100%;
+    }
 }
 
 .detail-header {
@@ -449,7 +456,6 @@ select {
 
 .detail-meta-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
     gap: 20px;
     margin-top: 20px;
 }
@@ -488,7 +494,11 @@ select {
 
 [data-slot="tabs-list"] {
     width: 100%;
+    height: 39px;
     border-bottom: 2px solid var(--border);
+    @media (max-width: 425px) {
+        scrollbar-width: none;
+    }
 }
 
 .details-description {

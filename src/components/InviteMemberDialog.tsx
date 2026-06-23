@@ -109,6 +109,7 @@ export const InviteMemberDialog = ({
             <DialogTrigger asChild>
                 <Button
                     variant="defaultYellow"
+                    size={"sm"}
                     className="gap-2 font-bold cursor-pointer"
                 >
                     <UserPlus size={18} />

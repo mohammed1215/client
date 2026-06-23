@@ -31,7 +31,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ColumnCard } from "@/components/ColumnCard";
 import { TaskSlider } from "@/components/TaskSlider";
-import { InviteMemberBoardDialog } from "@/components/InviteMemberBoardDialog";
+// import { InviteMemberBoardDialog } from "@/components/InviteMemberBoardDialog";
 import { DialogButton } from "../components/DialogButton";
 import { useBoardInfo } from "../hooks/useBoardInfo";
 
@@ -376,7 +376,7 @@ export const BoardInfoPage = ({
                             </div>
                         </DialogContent>
                     </Dialog>
-                    <InviteMemberBoardDialog workspaceId="" workspaceName="" />
+                    {/* <InviteMemberBoardDialog workspaceId="" workspaceName="" /> */}
                 </div>
             </header>
 

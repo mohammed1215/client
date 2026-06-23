@@ -23,6 +23,5 @@ createRoot(document.getElementById("root")!).render(
                 <Toaster />
             </BrowserRouter>
         </TooltipProvider>
-        ,
     </StrictMode>,
 );

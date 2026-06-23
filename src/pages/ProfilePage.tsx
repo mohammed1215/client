@@ -20,7 +20,7 @@ export const ProfilePage = () => {
     } = useProfile();
 
     return (
-        <section className="flex justify-center items-center w-full gap-5">
+        <section className="flex justify-center items-center w-full gap-5 px-3">
             {isUploadingProfileImage && (
                 <progress
                     className="fixed top-0 left-0 block w-screen h-1 accent-indigo-600 bg-transparent z-[9999]"
@@ -29,7 +29,7 @@ export const ProfilePage = () => {
                 ></progress>
             )}
 
-            <div className="min-w-[500px]  bg-(--surface) rounded-lg px-10 py-8 flex-col flex items-center gap-5">
+            <div className="max-w-[500px]  bg-(--surface) rounded-lg px-10 py-8 flex-col flex items-center gap-5">
                 <div>
                     {/* image */}
                     <span>PROFILE</span>
@@ -87,7 +87,7 @@ export const ProfilePage = () => {
                 </Button>
                 {/* fields */}
                 <form className="space-y-6" onSubmit={handleUpdateProfile}>
-                    <div className="flex gap-5">
+                    <div className="flex gap-5 flex-col sm:flex-row">
                         <Field
                             label="Firstname"
                             htmlFor="first-name"
@@ -125,7 +125,7 @@ export const ProfilePage = () => {
                     <div>
                         <Button
                             variant={"outline"}
-                            className="dark:border-(--border2)! cursor-pointer"
+                            className="dark:border-(--border2)! cursor-pointer mx-auto block "
                             isLoading={isEditing}
                         >
                             Save Changes
