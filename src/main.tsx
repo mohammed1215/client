@@ -9,19 +9,20 @@ import { UserProvider } from "./context/userContext.tsx";
 import { ThemeProvider } from "./context/themeContext.tsx";
 
 createRoot(document.getElementById("root")!).render(
-    // <StrictMode>
-    <TooltipProvider>
-        <BrowserRouter>
-            <UserProvider>
-                <ThemeProvider
-                    defaultTheme="system"
-                    storageKey="taskflow-theme"
-                >
-                    <App />
-                </ThemeProvider>
-            </UserProvider>
-            <Toaster />
-        </BrowserRouter>
-    </TooltipProvider>,
-    // </StrictMode>,
+    <StrictMode>
+        <TooltipProvider>
+            <BrowserRouter>
+                <UserProvider>
+                    <ThemeProvider
+                        defaultTheme="system"
+                        storageKey="taskflow-theme"
+                    >
+                        <App />
+                    </ThemeProvider>
+                </UserProvider>
+                <Toaster />
+            </BrowserRouter>
+        </TooltipProvider>
+        ,
+    </StrictMode>,
 );

@@ -224,7 +224,7 @@ export const BoardInfoPage = ({
         },
         onSuccess(data) {
             console.log(data);
-            toast.success("board has been created successfully", {
+            toast.success("task has been created successfully", {
                 id: "create-board-columns",
             });
             queryClient.invalidateQueries({ queryKey: ["get-board-columns"] });
@@ -754,7 +754,7 @@ export const BoardInfoPage = ({
                         </Badge>
                     </div>
                     <div className="flex gap-2">
-                        {/* <Select>
+                        <Select>
                             <SelectTrigger className=" cursor-pointer border-2 hover:border-white! transition duration-300">
                                 <SelectValue
                                     className=""
@@ -769,7 +769,7 @@ export const BoardInfoPage = ({
                                     <SelectItem value="s">Updated</SelectItem>
                                 </SelectGroup>
                             </SelectContent>
-                        </Select> */}
+                        </Select>
                         <Dialog>
                             <DialogTrigger>
                                 <Button className="cursor-pointer hover:border-white border-2">

@@ -101,10 +101,15 @@ export const useProfile = () => {
     const getUserQuery = useQuery({
         queryKey: ["get-user-query"],
         queryFn: async () => {
-            const data = (await axiosInstance.get(api.userApiEndPoints.getMe))
-                .data;
             const token = localStorage.getItem("token");
             const user = localStorage.getItem("user");
+            const data = (
+                await axiosInstance.get(api.userApiEndPoints.getMe, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                })
+            ).data;
             if (token !== null && user !== null)
                 login(token, {
                     ...JSON.parse(user),
