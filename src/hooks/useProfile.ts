@@ -31,7 +31,7 @@ export const useProfile = () => {
                     {
                         headers: {
                             "Content-Type": "multipart/form-data",
-                            Authorization: localStorage.get("token"),
+                            Authorization: localStorage.getItem("token"),
                         },
                         onUploadProgress(p) {
                             if (!p.total) return;
