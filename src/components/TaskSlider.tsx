@@ -1,19 +1,9 @@
-import {
-    attahcmentEndPoints,
-    axiosInstance,
-    commentsEndpoints,
-    taskEndpoints,
-} from "@/api/api";
-import { useUser } from "@/context/userContext";
-import { formatterDate, getUrl } from "@/helpers/helpers";
-import type { Column, CreateCommentDto, Task } from "@/pages/BoardInfo";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { formatterDate } from "@/helpers/helpers";
+import type { Column } from "@/pages/BoardInfo";
 import { format } from "date-fns";
 import { Loader2, X } from "lucide-react";
-import React, { useMemo, useRef, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Button } from "./ui/button";
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Input } from "./ui/input";
 import { Checkbox } from "./ui/checkbox";
@@ -28,6 +18,7 @@ import { Label } from "./ui/label";
 import { MentionsInput, Mention } from "react-mentions";
 import { ActivityTab } from "./ActivityTab";
 import { DetailsTaskTab } from "./DetailsTab";
+import { useTaskSlider } from "../hooks/useTaskSlider";
 const mentionsStyle = {
     control: {
         fontSize: 14,
@@ -68,204 +59,35 @@ export const TaskSlider = ({
     columns,
 }: {
     taskId: string | null;
-    setActivePanel: any;
+    setActivePanel: (activePanel: boolean) => void;
     activePanel: boolean;
     columns?: Column[] | null;
 }) => {
-    const [assigneeIds, setAssigneeIds] = useState<any>([]);
-    const [commentText, setCommentText] = useState("");
-    const { token } = useUser();
-    const queryClient = useQueryClient();
-    const query = useQuery({
-        queryKey: ["task-details", taskId],
-        queryFn: async () => {
-            const response = await axiosInstance.get<Task>(
-                getUrl(taskEndpoints.getTaskInfo, { taskId }),
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                },
-            );
-
-            const assigneeIds = response.data?.assignedTasks?.map(
-                (assigneeTask) => assigneeTask.user.id,
-            );
-            setAssigneeIds(assigneeIds);
-
-            return response.data;
-        },
-        enabled: !!taskId,
-    });
-    const mentionData = useMemo(() => {
-        return (
-            query.data?.board?.members?.map((member) => ({
-                id: member.user.id,
-                display: `${member.user.firstname} ${member.user.lastname}`,
-            })) || []
-        );
-    }, [query]);
-
-    const mutation = useMutation({
-        mutationKey: ["add-assignee"],
-        mutationFn: async (formData: object) => {
-            const response = await axiosInstance.post(
-                getUrl(taskEndpoints.AddAssigneesToTask, { taskId }),
-                formData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                },
-            );
-            return response.data;
-        },
-        onSuccess() {
-            queryClient.invalidateQueries({
-                queryKey: ["task-details", taskId],
-            });
-        },
-    });
-    const mutation2 = useMutation({
-        mutationKey: ["remove-assignee"],
-        mutationFn: async (formData: object) => {
-            const response = await axiosInstance.post(
-                getUrl(taskEndpoints.removeAssigneeFromTask, { taskId }),
-                formData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                },
-            );
-            return response.data;
-        },
-        onSuccess() {
-            queryClient.invalidateQueries({
-                queryKey: ["task-details", taskId],
-            });
-        },
-    });
-
-    function handleAddAssignee(updatedIds: string[]) {
-        mutation.mutate({ assigneeIds: updatedIds });
-    }
-
-    function handleRemoveAssignee(userToUnassignId: string) {
-        mutation2.mutate({ userToUnassignId });
-    }
-
-    const mutationMove = useMutation({
-        mutationKey: ["move-task"],
-        mutationFn: async (formData: object) => {
-            const response = await axiosInstance.patch(
-                getUrl(taskEndpoints.moveTask, { taskId }),
-                formData,
-            );
-            return response.data;
-        },
-        onSuccess() {
-            queryClient.invalidateQueries({ queryKey: ["get-board-columns"] });
-        },
-    });
-
-    function handleMoveTask(e: React.SubmitEvent) {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const data = Object.fromEntries(formData.entries()) as any;
-        data.position = parseInt(data.position);
-        mutationMove.mutate(data);
-    }
-    const mutation5 = useMutation({
-        mutationKey: ["post-comment"],
-        mutationFn: async (formData: CreateCommentDto) => {
-            const response = await axiosInstance.post(
-                getUrl(commentsEndpoints.getOrPostComments, { taskId }),
-                formData,
-            );
-            return response.data;
-        },
-        onSuccess() {
-            queryClient.invalidateQueries({
-                queryKey: ["task-details", taskId],
-            });
-        },
-    });
-    // 1️⃣ State to track if a file is hovering over the dropzone
-    const [isDragging, setIsDragging] = useState(false);
-    // 2️⃣ Ref to access the hidden input element
-    const fileInputRef = useRef(null);
-    const [fileName, setFileName] = useState("");
-    function handleDragOver(e: any) {
-        e.preventDefault(); // Prevents the browser from opening the file
-        setIsDragging(true);
-    }
-
-    function handleDragLeave(e: React.DragEvent) {
-        e.preventDefault();
-        setIsDragging(false);
-    }
-
-    function handleDrop(e: any) {
-        e.preventDefault();
-        setIsDragging(false);
-
-        // 3️⃣ Grab the dropped files and assign them to the hidden input
-        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-            if (fileInputRef.current) {
-                fileInputRef.current.files = e.dataTransfer.files;
-                setFileName(e.dataTransfer.files[0].name); // Update the state!
-            }
-        }
-    }
-
-    function handleAddComment(e: React.SubmitEvent) {
-        e.preventDefault();
-
-        // Regex to extract the IDs from the markup: @[Display Name](user-id)
-        const idRegex = /@\[.*?\]\((.*?)\)/g;
-        const extractedIds: string[] = [];
-        let match;
-        while ((match = idRegex.exec(commentText)) !== null) {
-            extractedIds.push(match[1]); // match[1] is the user ID inside the parenthesis
-        }
-
-        // Clean the text to send normal readable text to the backend (removes brackets)
-        const cleanContent = commentText.replace(/@\[(.*?)\]\((.*?)\)/g, "@$1");
-
-        // Send the exact format your NestJS DTO expects
-        mutation5.mutate({
-            content: cleanContent,
-            mentionedUserIds: [...new Set(extractedIds)],
-        });
-
-        // Clear input after submission
-        setCommentText("");
-    }
-
-    const mutation4 = useMutation({
-        mutationKey: ["upload-attachment"],
-        mutationFn: async (formData: FormData) => {
-            const response = await axiosInstance.post(
-                getUrl(attahcmentEndPoints.getOrUploadAttachment, { taskId }),
-                formData,
-            );
-            return response.data;
-        },
-        onSuccess() {
-            queryClient.invalidateQueries({ queryKey: ["task-details"] });
-        },
-    });
-
-    function handleUploadAttachment(e: React.SubmitEvent) {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        mutation4.mutate(formData);
-    }
+    const {
+        handleAddAssignee,
+        handleAddComment,
+        handleDragLeave,
+        handleDragOver,
+        handleDrop,
+        handleMoveTask,
+        handleRemoveAssignee,
+        handleUploadAttachment,
+        isGettingTaskDetails,
+        queryTaskDetails,
+        assigneeIds,
+        setAssigneeIds,
+        fileName,
+        isDragging,
+        fileInputRef,
+        isMoving,
+        commentText,
+        mentionData,
+        setCommentText,
+    } = useTaskSlider(taskId);
 
     return (
         <div className={`detail-panel ${activePanel ? "active" : ""}`}>
-            {query.isPending ? (
+            {isGettingTaskDetails ? (
                 <div className="justify-center flex w-full items-center h-100vh">
                     <Loader2 className="animate-spin" /> Loading
                 </div>
@@ -275,10 +97,10 @@ export const TaskSlider = ({
                     <div className="detail-header">
                         <div className="detail-header-left">
                             <h2 className="task-number">
-                                {query.data?.taskNumber}
+                                {queryTaskDetails?.taskNumber}
                             </h2>
                             <span className="priority">
-                                {query.data?.priority}
+                                {queryTaskDetails?.priority}
                             </span>
                         </div>
                         <span
@@ -292,44 +114,47 @@ export const TaskSlider = ({
                     <hr />
                     {/* detail body */}
                     <div className="detail-body">
-                        <h2 className="task-title">{query.data?.title}</h2>
+                        <h2 className="task-title">
+                            {queryTaskDetails?.title}
+                        </h2>
                         <div className="detail-meta-grid">
                             <div className="meta-item">
                                 <div className="meta-label">Status</div>
-                                {/* <div className="meta-value">{query.data.column}</div> */}
+                                {/* <div className="meta-value">{queryTaskDetails.column}</div> */}
                             </div>
                             <div className="meta-item">
                                 <div className="meta-label">Priority</div>
                                 <div className="meta-value">
-                                    {query.data?.priority}
+                                    {queryTaskDetails?.priority}
                                 </div>
                             </div>
                             <div className="meta-item">
                                 <div className="meta-label">Due Date</div>
                                 <div className="meta-value text-(--orange)">
-                                    {format(
-                                        query.data?.dueDate!,
-                                        "MMM dd, yyyy",
-                                    )}
+                                    {queryTaskDetails?.dueDate &&
+                                        format(
+                                            queryTaskDetails.dueDate,
+                                            "MMM dd, yyyy",
+                                        )}
                                 </div>
                             </div>
                             <div className="meta-item">
                                 <div className="meta-label">EST. Hours</div>
                                 <div className="meta-value">
-                                    {query.data?.estimatedHours}h
+                                    {queryTaskDetails?.estimatedHours}h
                                 </div>
                             </div>
                             <div className="meta-item">
                                 <div className="meta-label">Column</div>
                                 <div className="meta-value">
-                                    {query.data?.column?.name}
+                                    {queryTaskDetails?.column?.name}
                                 </div>
                             </div>
                             <div className="meta-item">
                                 <div className="meta-label">Created By</div>
                                 <div className="meta-value">
-                                    {query.data?.createdBy?.firstname}{" "}
-                                    {query.data?.createdBy?.lastname}
+                                    {queryTaskDetails?.createdBy?.firstname}{" "}
+                                    {queryTaskDetails?.createdBy?.lastname}
                                 </div>
                             </div>
                         </div>
@@ -360,16 +185,16 @@ export const TaskSlider = ({
                                 handleAddAssignee={handleAddAssignee}
                                 handleMoveTask={handleMoveTask}
                                 handleRemoveAssignee={handleRemoveAssignee}
-                                taskData={query.data}
+                                taskData={queryTaskDetails}
                                 setAssigneeIds={setAssigneeIds}
-                                isMoveLoading={mutationMove.isPending}
+                                isMoveLoading={isMoving}
                             />
                             <TabsContent
                                 className="flex flex-col"
                                 value="comments"
                             >
                                 <div className="comments">
-                                    {query.data?.comment?.map((com) => {
+                                    {queryTaskDetails?.comment?.map((com) => {
                                         return (
                                             <div className="comment">
                                                 <Avatar size="sm">
@@ -465,40 +290,44 @@ export const TaskSlider = ({
                                 </form>
                             </TabsContent>
                             <TabsContent value="attachments">
-                                {query.data?.attachments?.map((attachment) => {
-                                    return (
-                                        <div
-                                            key={attachment.id}
-                                            className="attachment-item"
-                                        >
-                                            <span>
-                                                {attachment.contentType.startsWith(
-                                                    "image",
-                                                )
-                                                    ? "🖼"
-                                                    : "📄"}
-                                            </span>
-                                            <span>
-                                                {attachment.originalFilename}
-                                            </span>
-                                            <span>
-                                                {attachment.fileSize /
-                                                    1024 /
-                                                    1024 <
-                                                0.1
-                                                    ? (
-                                                          attachment.fileSize /
-                                                          1024
-                                                      ).toFixed(2) + "KB"
-                                                    : (
-                                                          attachment.fileSize /
-                                                          1024 /
-                                                          1024
-                                                      ).toFixed(2) + "MB"}
-                                            </span>
-                                        </div>
-                                    );
-                                })}
+                                {queryTaskDetails?.attachments?.map(
+                                    (attachment) => {
+                                        return (
+                                            <div
+                                                key={attachment.id}
+                                                className="attachment-item"
+                                            >
+                                                <span>
+                                                    {attachment.contentType.startsWith(
+                                                        "image",
+                                                    )
+                                                        ? "🖼"
+                                                        : "📄"}
+                                                </span>
+                                                <span>
+                                                    {
+                                                        attachment.originalFilename
+                                                    }
+                                                </span>
+                                                <span>
+                                                    {attachment.fileSize /
+                                                        1024 /
+                                                        1024 <
+                                                    0.1
+                                                        ? (
+                                                              attachment.fileSize /
+                                                              1024
+                                                          ).toFixed(2) + "KB"
+                                                        : (
+                                                              attachment.fileSize /
+                                                              1024 /
+                                                              1024
+                                                          ).toFixed(2) + "MB"}
+                                                </span>
+                                            </div>
+                                        );
+                                    },
+                                )}
                                 <form
                                     action=""
                                     className="form-attachment mt-5"
@@ -553,8 +382,10 @@ export const TaskSlider = ({
                             </TabsContent>
                             <TabsContent value="activity" className="mt-4">
                                 <ActivityTab
-                                    activities={query.data?.activities}
-                                    boardMembers={query.data?.board?.members}
+                                    activities={queryTaskDetails?.activities}
+                                    boardMembers={
+                                        queryTaskDetails?.board?.members
+                                    }
                                 />
                             </TabsContent>
                         </Tabs>

@@ -29,8 +29,8 @@ export const DetailsTaskTab = ({
     handleMoveTask: (e: React.SubmitEvent<Element>) => void;
     handleRemoveAssignee: (assigneeId: string) => void;
     handleAddAssignee: (assigneeIds: string[]) => void;
-    assigneeIds: any[];
-    setAssigneeIds: (ids: any) => any;
+    assigneeIds: string[];
+    setAssigneeIds: (ids: string[]) => void;
     isMoveLoading: boolean;
 }) => {
     return (
@@ -87,7 +87,9 @@ export const DetailsTaskTab = ({
                                                         assigneeIds.indexOf(
                                                             member.user.id,
                                                         );
-                                                    let ids = [...assigneeIds];
+                                                    const ids = [
+                                                        ...assigneeIds,
+                                                    ];
                                                     if (index !== -1) {
                                                         ids.splice(index, 1);
                                                         setAssigneeIds(ids);
@@ -95,7 +97,7 @@ export const DetailsTaskTab = ({
                                                             member.user.id,
                                                         );
                                                     } else {
-                                                        let newIds = [
+                                                        const newIds = [
                                                             ...assigneeIds,
                                                             member.user.id,
                                                         ];
