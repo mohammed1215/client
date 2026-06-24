@@ -1,3 +1,4 @@
+export type SortByEnumType = "createdAt" | "dueDate" | "updatedAt";
 export interface CreateBoardDto {
     title: string;
     description: string;

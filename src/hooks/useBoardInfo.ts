@@ -15,9 +15,8 @@ export const useBoardInfo = () => {
     const [errors, setErrors] = useState(null);
     const [active, setActive] = useState("all");
     const { boardId } = useParams();
-    const [draggedItem, setDraggedItem] = useState<number | null>(null);
     const location = useLocation();
-    const [addColumnFormOpen, setAddColumnFormOpen] = useState(false);
+
     const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
     const [activePanel, setActivePanel] = useState(false);
     const queryClient = useQueryClient();
@@ -66,86 +65,6 @@ export const useBoardInfo = () => {
         },
     });
 
-    // reorder columns
-    const mutationCol = useMutation({
-        mutationKey: ["reOrderColumns"],
-        mutationFn: async (formData: object) => {
-            const response = await axiosInstance.put(
-                getUrl(columnEndPoints.reOrderColumn, { boardId }),
-                formData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                },
-            );
-            return response.data;
-        },
-    });
-
-    const mutationAddCol = useMutation({
-        mutationFn: async (data: { name: string }) => {
-            toast.loading("adding column...", {
-                id: 4,
-                position: "top-center",
-            });
-            const response = await axiosInstance.post(
-                getUrl(api.columnEndPoints.getOrCreateColumn, { boardId }),
-                data,
-            );
-
-            return response.data;
-        },
-        onSuccess() {
-            toast.success("column has been added successfully", {
-                id: 4,
-                position: "top-center",
-            });
-
-            queryClient.refetchQueries({ queryKey: ["get-board-columns"] });
-        },
-        onError() {
-            toast.error("Something went wrong", {
-                id: 4,
-                position: "top-center",
-            });
-        },
-    });
-
-    const mutationDelCol = useMutation({
-        mutationFn: async (columnId: string) => {
-            toast.loading("deleting column", { id: 4, position: "top-center" });
-
-            const response = await axiosInstance.delete(
-                getUrl(api.columnEndPoints.deleteColumn, { boardId, columnId }),
-            );
-        },
-        onSuccess() {
-            toast.success("column  has been deleted successfully", {
-                id: 4,
-                position: "top-center",
-            });
-
-            queryClient.refetchQueries({ queryKey: ["get-board-columns"] });
-        },
-        onError() {
-            toast.error("something went wrong");
-        },
-    });
-
-    //add new column
-    const handleAddColumn = (e: React.SubmitEvent) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const data = Object.fromEntries(formData.entries()) as { name: string };
-        mutationAddCol.mutate(data);
-    };
-
-    // delete column
-    const handleDeleteColumn = (columnId: string) => {
-        mutationDelCol.mutate(columnId);
-    };
-
     const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.target);
@@ -174,51 +93,12 @@ export const useBoardInfo = () => {
         },
     });
 
-    function handleDragStart(index: number) {
-        setDraggedItem(index);
-    }
-
-    function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
-        e.preventDefault();
-    }
-
-    function handleDrop(index: number) {
-        // Check for null specifically, as 0 is a valid index but falsy
-        if (queryGetBoardColumns.data && draggedItem !== null) {
-            const newItems = [...queryGetBoardColumns.data];
-            const [removed] = newItems.splice(draggedItem, 1);
-            newItems.splice(index, 0, removed);
-
-            for (let i = 0; i < newItems.length; i++) {
-                newItems[i].position = i;
-            }
-            // Update the cache
-            mutationCol.mutate({ newPosition: index, columnId: removed.id });
-            queryClient.setQueryData(["get-board-columns"], newItems);
-
-            setDraggedItem(null);
-        }
-    }
-
-    function handleReOrder(e: React.SubmitEvent) {
-        e.preventDefault();
-        console.log("reorderring");
-    }
-
     return {
-        handleAddColumn,
-        handleDeleteColumn,
-        handleDragOver,
-        handleDragStart,
-        handleDrop,
-        handleReOrder,
         handleSubmit,
         errors,
         active,
         setActive,
         location,
-        addColumnFormOpen,
-        setAddColumnFormOpen,
         isCreateTaskOpen,
         setIsCreateTaskOpen,
         activePanel,
@@ -228,7 +108,5 @@ export const useBoardInfo = () => {
         isGettingBoardColumnsInfo: queryGetBoardColumns.isPending,
         BoardColumnsData: queryGetBoardColumns.data,
         isCreatingTask: mutationCreateTask.isPending,
-        isDeletingTask: mutationDelCol.isPending,
-        isAddingTask: mutationAddCol.isPending,
     };
 };

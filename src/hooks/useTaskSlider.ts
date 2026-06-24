@@ -203,11 +203,8 @@ export const useTaskSlider = (taskId: string | null) => {
                 {
                     headers: { Authorization: `Bearer ${token}` },
                     onUploadProgress(progressEvent) {
-                        if (progressEvent.total) {
-                            setProgress(
-                                (progressEvent.loaded / progressEvent.total) *
-                                    100,
-                            );
+                        if (progressEvent.progress) {
+                            setProgress(progressEvent.progress * 100);
                         }
                     },
                 },

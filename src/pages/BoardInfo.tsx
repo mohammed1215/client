@@ -18,7 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
-import { Loader2, PlusCircle, X } from "lucide-react";
+import { Loader2, PlusCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
     Select,
@@ -34,6 +34,11 @@ import { TaskSlider } from "@/components/TaskSlider";
 // import { InviteMemberBoardDialog } from "@/components/InviteMemberBoardDialog";
 import { DialogButton } from "../components/DialogButton";
 import { useBoardInfo } from "../hooks/useBoardInfo";
+import { ColumnsDialog } from "../components/ColumnsDialog";
+import { SortByEnum } from "../class/class";
+import { useState } from "react";
+import type { Column, SortByEnumType, Task } from "../types/types";
+import { useUser } from "../context/userContext";
 
 export const BoardInfoPage = ({
     notificationCount = 0,
@@ -43,14 +48,7 @@ export const BoardInfoPage = ({
     const {
         active,
         activePanel,
-        addColumnFormOpen,
         errors,
-        handleAddColumn,
-        handleDeleteColumn,
-        handleDragOver,
-        handleDragStart,
-        handleDrop,
-        handleReOrder,
         handleSubmit,
         isCreateTaskOpen,
         isGettingBoardColumnsInfo,
@@ -58,14 +56,35 @@ export const BoardInfoPage = ({
         selectedTaskId,
         setActive,
         setActivePanel,
-        setAddColumnFormOpen,
         setIsCreateTaskOpen,
         setSelectedTaskId,
         BoardColumnsData,
         isCreatingTask,
-        isDeletingTask,
-        isAddingTask,
     } = useBoardInfo();
+    const { user } = useUser();
+    const [sortBy, setSortBy] = useState<SortByEnumType | undefined>();
+
+    function handleFilterTasks(tasks: Task[], column: Column) {
+        switch (active) {
+            case "high":
+            case "urgent":
+                return tasks.filter((task) => task.priority === active);
+            case "my-tasks":
+                return tasks.filter((task) => {
+                    return task.createdBy?.id === user?.id;
+                });
+            case "overdue":
+                return tasks.filter(
+                    (task) =>
+                        new Date(task?.dueDate ?? "").getTime() <
+                            new Date().getTime() && column.name !== "Done",
+                );
+            case "all":
+            default:
+                return tasks;
+        }
+    }
+
     if (isGettingBoardColumnsInfo) {
         return (
             <div className="justify-center flex w-full items-center h-100vh">
@@ -431,7 +450,11 @@ export const BoardInfoPage = ({
                         </Badge>
                     </div>
                     <div className="flex gap-2">
-                        <Select>
+                        <Select
+                            onValueChange={(value: SortByEnumType) =>
+                                setSortBy(value)
+                            }
+                        >
                             <SelectTrigger className=" cursor-pointer border-2 hover:border-white! transition duration-300">
                                 <SelectValue
                                     className=""
@@ -440,155 +463,19 @@ export const BoardInfoPage = ({
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>
-                                    <SelectItem value="s">Due Date</SelectItem>
-                                    <SelectItem value="s">Priority</SelectItem>
-                                    <SelectItem value="s">Created</SelectItem>
-                                    <SelectItem value="s">Updated</SelectItem>
+                                    <SelectItem value={SortByEnum.DUE_DATE}>
+                                        Due Date
+                                    </SelectItem>
+                                    <SelectItem value={SortByEnum.CREATED_AT}>
+                                        Created
+                                    </SelectItem>
+                                    <SelectItem value={SortByEnum.UPDATED_AT}>
+                                        Updated
+                                    </SelectItem>
                                 </SelectGroup>
                             </SelectContent>
                         </Select>
-                        <Dialog>
-                            <DialogTrigger>
-                                <Button className="cursor-pointer hover:border-white border-2">
-                                    Columns
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent className="bg-(--surface)">
-                                <DialogHeader>
-                                    <DialogTitle>Manage Columns</DialogTitle>
-                                </DialogHeader>
-                                <DialogDescription className="text-xs">
-                                    Drag to reorder columns. Max 10 columns per
-                                    board.
-                                </DialogDescription>
-                                {
-                                    <>
-                                        <form onSubmit={handleReOrder}>
-                                            <div className="col-list border-b border-b-border pb-3">
-                                                {BoardColumnsData?.map(
-                                                    (column, index) => {
-                                                        return (
-                                                            <div
-                                                                key={`col_item_${column.id}`}
-                                                                className="col-item"
-                                                                draggable
-                                                                onDragStart={(
-                                                                    e,
-                                                                ) => {
-                                                                    e.dataTransfer.setData(
-                                                                        "text/plain",
-                                                                        index.toString(),
-                                                                    );
-                                                                    handleDragStart(
-                                                                        index,
-                                                                    );
-                                                                }}
-                                                                onDragOver={
-                                                                    handleDragOver
-                                                                }
-                                                                onDrop={(e) => {
-                                                                    e.preventDefault();
-                                                                    handleDrop(
-                                                                        index,
-                                                                    );
-                                                                }}
-                                                            >
-                                                                <span>⠿</span>
-                                                                <Input
-                                                                    type="text"
-                                                                    defaultValue={
-                                                                        column.name
-                                                                    }
-                                                                    name="name"
-                                                                />
-                                                                <span
-                                                                    style={{
-                                                                        fontSize:
-                                                                            "11px",
-                                                                        color: "var(--text-3)",
-                                                                        fontFamily:
-                                                                            "'IBM Plex Mono',monospace",
-                                                                    }}
-                                                                >
-                                                                    pos:
-                                                                    {
-                                                                        column.position
-                                                                    }
-                                                                </span>
-                                                                <Button
-                                                                    variant={
-                                                                        "destructive"
-                                                                    }
-                                                                    disabled={
-                                                                        column.name ===
-                                                                            "Done" ||
-                                                                        isDeletingTask
-                                                                    }
-                                                                    className="cursor-pointer"
-                                                                    onClick={() =>
-                                                                        handleDeleteColumn(
-                                                                            column.id,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    <X />
-                                                                </Button>
-                                                            </div>
-                                                        );
-                                                    },
-                                                )}
-                                            </div>
-                                        </form>
-
-                                        <Button
-                                            variant={"defaultYellow"}
-                                            className="cursor-pointer"
-                                            onClick={() =>
-                                                setAddColumnFormOpen(
-                                                    !addColumnFormOpen,
-                                                )
-                                            }
-                                        >
-                                            {addColumnFormOpen
-                                                ? "Close"
-                                                : "Open"}{" "}
-                                            Column Form
-                                        </Button>
-                                    </>
-                                }
-
-                                {addColumnFormOpen && (
-                                    <form
-                                        action=""
-                                        id="change-column-name"
-                                        onSubmit={handleAddColumn}
-                                    >
-                                        <div>
-                                            <label htmlFor="col-name">
-                                                Column Name
-                                            </label>
-                                            <Input
-                                                id="col-name"
-                                                name="name"
-                                                className="mt-4"
-                                                placeholder="Enter Column Name"
-                                                required
-                                            />
-                                        </div>
-                                        <div className="flex gap-2 mt-2">
-                                            <Button
-                                                variant={"defaultYellow"}
-                                                className="cursor-pointer border-border border-3 dark:hover:border-[var(--amber-dim)] hover:scale-105"
-                                                type="submit"
-                                                disabled={isAddingTask}
-                                            >
-                                                + Add Column
-                                            </Button>
-                                        </div>
-                                    </form>
-                                )}
-                            </DialogContent>
-                        </Dialog>
+                        <ColumnsDialog BoardColumnsData={BoardColumnsData} />
                     </div>
                 </div>
             </div>
@@ -596,13 +483,40 @@ export const BoardInfoPage = ({
             <div className="column-wrapper">
                 <div className="column-cards">
                     {BoardColumnsData?.map((column, index) => {
+                        let sortedTasks = column.tasksInsideColumn;
+                        switch (sortBy) {
+                            case "createdAt":
+                                sortedTasks.sort(
+                                    (a, b) =>
+                                        new Date(a.createdAt).getTime() -
+                                        new Date(b.createdAt).getTime(),
+                                );
+                                break;
+                            case "dueDate":
+                                sortedTasks.sort(
+                                    (a, b) =>
+                                        new Date(a.dueDate ?? "").getTime() -
+                                        new Date(b.dueDate ?? "").getTime(),
+                                );
+                                break;
+                            case "updatedAt":
+                                sortedTasks.sort(
+                                    (a, b) =>
+                                        new Date(a.updatedAt ?? "").getTime() -
+                                        new Date(b.updatedAt ?? "").getTime(),
+                                );
+                                break;
+                            default:
+                                break;
+                        }
+                        sortedTasks = handleFilterTasks(sortedTasks, column);
                         return (
                             <ColumnCard
                                 activePanel={activePanel}
                                 setActivePanel={setActivePanel}
                                 setSelectedTask={setSelectedTaskId}
                                 key={`column_card_${column.id}_${index}`}
-                                tasks={column.tasksInsideColumn}
+                                tasks={sortedTasks}
                                 title={column.name}
                                 setIsCreateTaskOpen={setIsCreateTaskOpen}
                             />
