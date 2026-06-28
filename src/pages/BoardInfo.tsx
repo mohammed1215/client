@@ -43,7 +43,7 @@ import { useUser } from "../context/userContext";
 export const BoardInfoPage = ({
     notificationCount = 0,
 }: {
-    notificationCount: number | null;
+    notificationCount?: number | null;
 }) => {
     const {
         active,

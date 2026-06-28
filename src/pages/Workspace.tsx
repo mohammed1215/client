@@ -1,4 +1,4 @@
-import { axiosInstance, workspaceEndPoints } from "@/api/api";
+import api, { axiosInstance, workspaceEndPoints } from "@/api/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,13 +19,15 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Switch } from "@/components/ui/switch";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, Loader2, PlusCircle } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
 import { useUser } from "@/context/userContext";
 import { useEffect, useState } from "react";
 import { WorkspaceCard } from "@/components/WorkspaceCard";
 import { useSocket } from "@/context/useSocket";
+import { getUrl } from "../helpers/helpers";
+import type { NotificationFindAllResponse } from "../types/types";
 
 interface ErrorResponse {
     message: string;
@@ -92,40 +94,46 @@ interface GetWorkspacesDto {
 export const WorkspacePage = ({
     notificationCount = 0,
 }: {
-    notificationCount: number | null;
+    notificationCount?: number | null;
 }) => {
     const location = useLocation();
     const { token, user } = useUser();
     const [errors, setErrors] = useState(null);
     const [active, setActive] = useState("all");
     const queryClient = useQueryClient();
+    const navigate = useNavigate();
     // const [prevWorkspace, setPrevWorkspace] = useState<string | null>(null);
 
     // // leave workspace room and board if exists
     // useEffect(() => {
 
     // })
-    // create workspace
+
+    //fetch notifications
+
+    //create worksapce
     const mutation = useMutation({
         mutationKey: ["create-workspace"],
         mutationFn: async (formData: CreateWorkspaceDTO) => {
             toast.loading("creating workspace", {
                 id: "create-workspace",
             });
-            const response = await axiosInstance.post(
+            const response = await axiosInstance.post<{ message: string }>(
                 workspaceEndPoints.getOrCreateWorkspace,
                 formData,
                 { headers: { Authorization: `Bearer ${token}` } },
             );
             return response.data;
         },
-        onSuccess(data) {
+        async onSuccess(data) {
             console.log(data);
             toast.success("workspace has been created successfully", {
                 id: "create-workspace",
             });
 
-            queryClient.invalidateQueries({ queryKey: ["get-workspaces"] });
+            await queryClient.invalidateQueries({
+                queryKey: ["get-workspaces"],
+            });
         },
         onError(error: AxiosError<ErrorResponse>) {
             toast.error(error.response?.data.message, {
@@ -190,7 +198,6 @@ export const WorkspacePage = ({
         <div className="flex-col flex w-full">
             <header className="flex items-center justify-between h-16 px-4 bg-background border-b border-border">
                 <div className="flex items-center gap-4">
-                    {/* This button automatically toggles the Sidebar! */}
                     <SidebarTrigger />
                     <p className="capitalize">
                         {location.pathname.split("/").at(-1)}
@@ -207,6 +214,21 @@ export const WorkspacePage = ({
                             className="hidden md:block text-sm cursor-pointer bg-(--input)"
                         />
                     </Link>
+                    <Button
+                        variant={"outline"}
+                        className="cursor-pointer hover:scale-110 transition-all active:scale-90 relative"
+                        onClick={() => {
+                            void navigate("/notifications");
+                        }}
+                    >
+                        <Bell className="text-amber" />
+                        <Badge
+                            className="absolute w-5 font-semibold top-0 right-0 aspect-square"
+                            variant={"destructive"}
+                        >
+                            {notificationCount}
+                        </Badge>
+                    </Button>
 
                     <Dialog>
                         <DialogTrigger asChild>
@@ -356,11 +378,11 @@ export const WorkspacePage = ({
             <div className="workspace-cards">
                 {query.data?.workspaces.map((workspace) => {
                     let role = "member";
-                    if (workspace.owner.id === user.id) {
+                    if (workspace.owner.id === user?.id) {
                         role = "owner";
                     } else {
                         workspace.members.forEach((member) => {
-                            if (member.user.id === user.id) {
+                            if (member.user.id === user?.id) {
                                 role = member.role;
                             }
                         });

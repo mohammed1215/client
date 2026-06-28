@@ -10,27 +10,29 @@ import {
     SidebarMenuItem,
     SidebarProvider,
 } from "@/components/ui/sidebar";
-import { FolderGit2, Search } from "lucide-react"; // Make sure to npm install lucide-react
+import { Bell, FolderGit2, Search } from "lucide-react"; // Make sure to npm install lucide-react
 import { AvatarFallback, AvatarImage, Avatar } from "./ui/avatar";
 
 import { useUser } from "@/context/userContext";
 
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
+import { useSocket } from "../context/useSocket";
 
 export default function DashboardLayout({
     children,
+    notificationCount,
 }: {
     children: React.ReactNode;
+    notificationCount?: number;
 }) {
     const { user, logout } = useUser();
+    const { notification } = useSocket();
     const handleLogout = () => {
         logout();
     };
     return (
-        // 1. Provider wraps everything!
         <SidebarProvider>
-            {/* 2. THE SIDEBAR */}
             <Sidebar>
                 <SidebarHeader className="h-16 flex items-center justify-center border-b">
                     <h1 className="text-2xl font-bold text-blue-600 dark:text-(--logo-color) w-full px-4 flex items-center gap-2">
@@ -70,7 +72,21 @@ export default function DashboardLayout({
                                         </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
-
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton asChild>
+                                        <Link
+                                            to="/notifications"
+                                            className="relative"
+                                        >
+                                            <Bell />
+                                            <span>Notifications</span>
+                                            <span className="absolute w-4 flex justify-center items-center aspect-square bg-red-500/50 right-0 rounded-full">
+                                                {notification?.notificationCount ||
+                                                    notificationCount}
+                                            </span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
                                 <SidebarMenuItem>
                                     <SidebarMenuButton asChild>
                                         <Link to="/search">

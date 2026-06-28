@@ -5,7 +5,9 @@ import { SocketContext } from "./useSocket";
 export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     //join-workspace-room
     const socketRef = useRef<Socket | null>(null);
-    const [notification, setNotification] = useState(0);
+    const [notification, setNotification] = useState<{
+        notificationCount?: number;
+    }>();
 
     useEffect(() => {
         socketRef.current = io("localhost:3002", {
@@ -14,9 +16,16 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
         socketRef.current.on("connect", () => console.log("Connected to WS"));
 
-        socketRef.current.on("notification-count", (notificationCount) => {
-            setNotification(notificationCount);
-        });
+        socketRef.current.on(
+            "notification-count",
+            (notificationSocket: { notificationCount?: number }) => {
+                console.log(
+                    "notification-count from socket context",
+                    notificationSocket,
+                );
+                setNotification(notificationSocket);
+            },
+        );
 
         return () => {
             socketRef.current?.disconnect();

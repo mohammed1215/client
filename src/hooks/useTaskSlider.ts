@@ -7,7 +7,13 @@ import {
 } from "../api/api";
 import { getUrl } from "../helpers/helpers";
 import { useMemo, useRef, useState } from "react";
-import type { CreateCommentDto, Task } from "../types/types";
+import type {
+    CreateCommentDto,
+    CreateCommentResponse,
+    MoveTaskRequest,
+    Task,
+    UploadAttachmentResponse,
+} from "../types/types";
 import { useUser } from "../context/userContext";
 import { toast } from "sonner";
 
@@ -55,7 +61,7 @@ export const useTaskSlider = (taskId: string | null) => {
     const mutation = useMutation({
         mutationKey: ["add-assignee"],
         mutationFn: async (formData: object) => {
-            const response = await axiosInstance.post(
+            const response = await axiosInstance.post<{ message: string }>(
                 getUrl(taskEndpoints.AddAssigneesToTask, { taskId }),
                 formData,
                 {
@@ -66,19 +72,22 @@ export const useTaskSlider = (taskId: string | null) => {
             );
             return response.data;
         },
-        onSuccess() {
-            queryClient.invalidateQueries({
+        async onSuccess() {
+            await queryClient.invalidateQueries({
                 queryKey: ["task-details", taskId],
             });
         },
     });
     const mutation2 = useMutation({
         mutationKey: ["remove-assignee"],
-        mutationFn: async (formData: object) => {
-            const response = await axiosInstance.post(
-                getUrl(taskEndpoints.removeAssigneeFromTask, { taskId }),
-                formData,
+        mutationFn: async (formData: { userToUnassignId: string }) => {
+            const response = await axiosInstance.delete<{ message: string }>(
+                getUrl(taskEndpoints.removeAssigneeFromTask, {
+                    taskId,
+                    userId: formData.userToUnassignId,
+                }),
                 {
+                    data: formData,
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -86,8 +95,8 @@ export const useTaskSlider = (taskId: string | null) => {
             );
             return response.data;
         },
-        onSuccess() {
-            queryClient.invalidateQueries({
+        async onSuccess() {
+            await queryClient.invalidateQueries({
                 queryKey: ["task-details", taskId],
             });
         },
@@ -104,7 +113,7 @@ export const useTaskSlider = (taskId: string | null) => {
     const mutationMove = useMutation({
         mutationKey: ["move-task"],
         mutationFn: async (formData: object) => {
-            const response = await axiosInstance.patch(
+            const response = await axiosInstance.patch<{ message: string }>(
                 getUrl(taskEndpoints.moveTask, { taskId }),
                 formData,
                 {
@@ -115,29 +124,35 @@ export const useTaskSlider = (taskId: string | null) => {
             );
             return response.data;
         },
-        onSuccess() {
-            queryClient.invalidateQueries({ queryKey: ["get-board-columns"] });
+        async onSuccess() {
+            await queryClient.invalidateQueries({
+                queryKey: ["get-board-columns"],
+            });
         },
     });
 
     function handleMoveTask(e: React.SubmitEvent) {
         e.preventDefault();
         const formData = new FormData(e.target);
-        const data = Object.fromEntries(formData.entries()) as any;
-        data.position = parseInt(data.position);
+        const data = Object.fromEntries(
+            formData.entries(),
+        ) as unknown as MoveTaskRequest;
+        if (typeof data.position === "string") {
+            data.position = parseInt(data.position);
+        }
         mutationMove.mutate(data);
     }
     const mutation5 = useMutation({
         mutationKey: ["post-comment"],
         mutationFn: async (formData: CreateCommentDto) => {
-            const response = await axiosInstance.post(
+            const response = await axiosInstance.post<CreateCommentResponse>(
                 getUrl(commentsEndpoints.getOrPostComments, { taskId }),
                 formData,
             );
             return response.data;
         },
-        onSuccess() {
-            queryClient.invalidateQueries({
+        async onSuccess() {
+            await queryClient.invalidateQueries({
                 queryKey: ["task-details", taskId],
             });
         },
@@ -147,7 +162,7 @@ export const useTaskSlider = (taskId: string | null) => {
     // 2️⃣ Ref to access the hidden input element
     const fileInputRef = useRef(null);
     const [fileName, setFileName] = useState("");
-    function handleDragOver(e: any) {
+    function handleDragOver(e: React.DragEvent) {
         e.preventDefault(); // Prevents the browser from opening the file
         setIsDragging(true);
     }
@@ -157,15 +172,17 @@ export const useTaskSlider = (taskId: string | null) => {
         setIsDragging(false);
     }
 
-    function handleDrop(e: any) {
+    function handleDrop(e: React.DragEvent) {
+        // 👈 استبدلنا any بالنوع الصحيح لحدث السحب
         e.preventDefault();
         setIsDragging(false);
 
-        // Grab the dropped files and assign them to the hidden input
         if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
             if (fileInputRef.current) {
                 fileInputRef.current.files = e.dataTransfer.files;
-                setFileName(e.dataTransfer.files[0].name); // Update the state!
+
+                const droppedFile: File = e.dataTransfer.files[0]; // 👈 الملف نوعه File
+                setFileName(droppedFile.name); // 👈 الاسم نوعه string
             }
         }
     }
@@ -197,7 +214,7 @@ export const useTaskSlider = (taskId: string | null) => {
     const mutationUploadAttachment = useMutation({
         mutationKey: ["upload-attachment"],
         mutationFn: async (formData: FormData) => {
-            const response = await axiosInstance.post(
+            const response = await axiosInstance.post<UploadAttachmentResponse>(
                 getUrl(attahcmentEndPoints.getOrUploadAttachment, { taskId }),
                 formData,
                 {
@@ -211,8 +228,8 @@ export const useTaskSlider = (taskId: string | null) => {
             );
             return response.data;
         },
-        onSuccess() {
-            queryClient.invalidateQueries({ queryKey: ["task-details"] });
+        async onSuccess() {
+            await queryClient.invalidateQueries({ queryKey: ["task-details"] });
         },
     });
 

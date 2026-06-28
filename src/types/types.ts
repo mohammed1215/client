@@ -219,3 +219,54 @@ export interface dashboardResponse {
         taskCount: number;
     }[];
 }
+export type NotificationTypes =
+    | "TASK_ASSIGNED"
+    | "USER_MENTIONED"
+    | "TASK_DUE_SOON"
+    | "TASK_OVERDUE"
+    | "WORKSPACE_INVITATION"
+    | "WATCHED_TASK_COMMENT"
+    | "TASK_UNASSIGNED"
+    | "TASK_CREATED";
+
+export interface NotificationFindAllResponse {
+    id: string;
+    type: NotificationTypes;
+    title: string;
+    message: string;
+    linkUrl: string; //"/tasks/7c0a99d9-2d8f-46c9-a03b-cbc2ce71302a";
+    isRead: boolean;
+    createdAt: string; //"2026-04-21T13:53:25.256Z";
+    readAt: string | null;
+}
+
+export interface UploadAttachmentResponse {
+    id: string;
+    filename: string;
+    originalFilename: string;
+    fileSize: number;
+    contentType: string;
+    storagePath: string;
+    createdAt: string;
+    task: string;
+    uploadedBy: string;
+}
+
+export interface MoveTaskRequest {
+    columnId: string;
+    position: number | string;
+}
+
+export interface CreateCommentResponse {
+    id: string;
+    content: string;
+    isEdited: boolean;
+    createdAt: string;
+    updatedAt: string;
+    task: string;
+    author: string;
+}
+
+// export interface NotificationMarkAllAsReadResponse {}
+
+// export interface NotificationMarkAsRead {}

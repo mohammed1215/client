@@ -1,7 +1,8 @@
 import axios, { AxiosError } from "axios";
-
+const BaseUrl: string =
+    import.meta.env.VITE_BACKEND ?? "http://localhost:5000/api";
 export const axiosInstance = axios.create({
-    baseURL: import.meta.env.VITE_BACKEND,
+    baseURL: BaseUrl,
     headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
@@ -77,6 +78,12 @@ export const searchEndpoints = {
     search: "/api/v1/search",
 };
 
+export const notificationEndpoints = {
+    markNotificationRead: `/api/v1/notifications/{notificationId}/read`,
+    getAllNotifications: `/api/v1/notifications`,
+    markAllRead: `/api/v1/notifications/mark-all-read`,
+};
+
 export default {
     axiosInstance,
     userApiEndPoints,
@@ -88,4 +95,5 @@ export default {
     attahcmentEndPoints,
     commentsEndpoints,
     searchEndpoints,
+    notificationEndpoints,
 };

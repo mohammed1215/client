@@ -2,7 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { SignUpPage } from "./pages/SignUp.tsx";
 import { LoginPage } from "./pages/Login.tsx";
 import { LoginHeader } from "./components/Layouts/LoginHeader.tsx";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { WorkspacePage } from "./pages/Workspace.tsx";
 import { BoardsPage } from "./pages/Board.tsx";
 import { BoardInfoPage } from "./pages/BoardInfo.tsx";
@@ -13,17 +13,31 @@ import { ForgotPassword } from "./pages/ForgotPassword.tsx";
 import { ResetPassword } from "./pages/ResetPassword.tsx";
 import { AcceptInvitationPage } from "./pages/AcceptInvitateionPage.tsx";
 import { VerifyEmail } from "./pages/VerifyEmail.tsx";
-import { useState } from "react";
 import { SocketLayer } from "./socket/socket.tsx";
 import { ProfilePage } from "./pages/ProfilePage.tsx";
+import { NotificationPage } from "./pages/NotificationPage.tsx";
+import api, { axiosInstance } from "./api/api.ts";
+import type { NotificationFindAllResponse } from "./types/types.ts";
+import { getUrl } from "./helpers/helpers.tsx";
+import { useUser } from "./context/userContext.tsx";
 
-const queryClient = new QueryClient();
 function App() {
-    const [notificationCount, setNotificationCount] = useState<number | null>(
-        null,
-    );
+    const { token, user } = useUser();
+    const queryGetNotifiation = useQuery({
+        queryKey: [`get-notifications-${user?.id}`],
+        queryFn: async () => {
+            const response = await axiosInstance.get<
+                NotificationFindAllResponse[]
+            >(getUrl(api.notificationEndpoints.getAllNotifications), {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            return response.data;
+        },
+    });
     return (
-        <QueryClientProvider client={queryClient}>
+        <>
             <Routes>
                 <Route element={<LoginHeader />}>
                     <Route path="/signup" element={<SignUpPage />} />
@@ -35,8 +49,18 @@ function App() {
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/verify-email" element={<VerifyEmail />} />
                 </Route>
-                <Route element={<AuthorizeUser />}>
-                    <Route element={<SocketLayer />}>
+                <Route element={<SocketLayer />}>
+                    <Route
+                        element={
+                            <AuthorizeUser
+                                notificationCount={
+                                    queryGetNotifiation.data?.filter(
+                                        (ni) => !ni.isRead,
+                                    ).length
+                                }
+                            />
+                        }
+                    >
                         <Route
                             path="/"
                             element={<Navigate to="/workspaces" />}
@@ -53,8 +77,23 @@ function App() {
                             path="/workspaces"
                             element={
                                 <WorkspacePage
-                                    notificationCount={notificationCount}
+                                    notificationCount={
+                                        queryGetNotifiation.data?.filter(
+                                            (ni) => !ni.isRead,
+                                        ).length
+                                    }
                                     // workspaceId={prevWorkspace}
+                                />
+                            }
+                        />
+                        <Route
+                            path="/notifications"
+                            element={
+                                <NotificationPage
+                                    isGettingNotifications={
+                                        queryGetNotifiation.isPending
+                                    }
+                                    notifications={queryGetNotifiation.data}
                                 />
                             }
                         />
@@ -72,7 +111,9 @@ function App() {
                             path="/boards/:boardId"
                             element={
                                 <BoardInfoPage
-                                    notificationCount={notificationCount}
+                                    notificationCount={
+                                        queryGetNotifiation.data?.length
+                                    }
                                 />
                             }
                         />
@@ -86,7 +127,7 @@ function App() {
                 </Route>
             </Routes>
             <ReactQueryDevtools />
-        </QueryClientProvider>
+        </>
     );
 }
 
